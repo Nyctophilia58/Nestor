@@ -34,9 +34,15 @@ const Navbar = () => {
         <div className="flex items-center gap-3">
           {user ? (
             <>
-              <span className="text-sm text-gray-600 hidden md:block">
+              <Link to="/favourites" className="hover:text-blue-600 transition">
+                🤍 Saved
+              </Link>
+              <Link
+                to="/dashboard"
+                className="text-sm text-gray-600 hover:text-blue-600 transition"
+              >
                 Hi, {user.name.split(" ")[0]}
-              </span>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="text-sm px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition"
