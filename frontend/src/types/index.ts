@@ -23,3 +23,10 @@ export interface Property {
   owner_phone?: string;
   created_at: string;
 }
+
+export interface FavouriteState {
+  ids: number[];
+  add: (id: number) => void;
+  remove: (id: number) => void;
+  set: (ids: number[]) => void;
+}
