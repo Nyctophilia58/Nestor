@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import { type Property } from "../types";
 import { useAuthStore } from "../store/authStore";
+import FavouriteButton from "../components/FavouriteButton";
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -75,6 +76,10 @@ const PropertyDetail = () => {
               🏠
             </div>
           )}
+        </div>
+
+        <div className="flex items-center gap-3 mb-6">
+          <FavouriteButton propertyId={property.id} />
         </div>
 
         {/* Thumbnail Strip */}
