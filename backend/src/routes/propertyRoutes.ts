@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getProperties,
+  getMyProperties,
   getProperty,
   createProperty,
   updateProperty,
@@ -12,6 +13,7 @@ const router = express.Router();
 
 // Public routes
 router.get("/", getProperties);
+router.get("/mine", protect, getMyProperties);
 router.get("/:id", getProperty);
 
 // Protected routes (require authentication)
