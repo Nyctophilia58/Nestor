@@ -15,7 +15,7 @@ const Navbar = () => {
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="text-2xl font-bold text-blue-600">
-          Varaden
+          Nestor
         </Link>
 
         {/* Links */}
