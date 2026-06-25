@@ -64,6 +64,19 @@ export const getProperty = async (req: Request, res: Response) => {
   }
 };
 
+// GET my properties
+export const getMyProperties = async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM properties WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.userId],
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
 // POST create property
 export const createProperty = async (req: AuthRequest, res: Response) => {
   const {
