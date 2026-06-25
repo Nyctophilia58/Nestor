@@ -6,8 +6,26 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AddProperty from "./pages/AddProperty";
 import Navbar from "./components/Navbar";
+import Dashboard from "./pages/Dashboard";
+import { useEffect } from "react";
+import api from "./lib/api";
+import { useAuthStore } from "./store/authStore";
+import { useFavouriteStore } from "./store/favouriteStore";
+import Favourites from "./pages/Favourites";
 
 function App() {
+  const { user } = useAuthStore();
+  const { set } = useFavouriteStore();
+
+  useEffect(() => {
+    if (user) {
+      api
+        .get("/properties/favourites")
+        .then((res) => set(res.data.map((p) => p.id)))
+        .catch(() => {});
+    }
+  }, [user]);
+
   return (
     <BrowserRouter>
       <Navbar />
@@ -18,6 +36,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/add-property" element={<AddProperty />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/favourites" element={<Favourites />} />
       </Routes>
     </BrowserRouter>
   );

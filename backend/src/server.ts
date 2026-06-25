@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import "./config/db";
 import authRoutes from "./routes/authRoutes";
 import propertyRoutes from "./routes/propertyRoutes";
+import uploadRoutes from "./routes/uploadRoutes";
+import path from "path";
 
 dotenv.config();
 
@@ -22,6 +24,12 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/properties", propertyRoutes);
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
+// Upload route
+app.use("/api/upload", uploadRoutes);
 
 // Health check
 app.get("/", (req, res) => {
