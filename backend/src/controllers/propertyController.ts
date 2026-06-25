@@ -191,3 +191,47 @@ export const deleteProperty = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Server error", error: err });
   }
 };
+
+// ADD favourite
+export const addFavourite = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    await pool.query(
+      "INSERT INTO favourites (user_id, property_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+      [req.userId, id],
+    );
+    res.json({ message: "Added to favourites" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
+// REMOVE favourite
+export const removeFavourite = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  try {
+    await pool.query(
+      "DELETE FROM favourites WHERE user_id = $1 AND property_id = $2",
+      [req.userId, id],
+    );
+    res.json({ message: "Removed from favourites" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};
+
+// GET my favourites
+export const getFavourites = async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await pool.query(
+      `SELECT p.* FROM properties p
+       JOIN favourites f ON p.id = f.property_id
+       WHERE f.user_id = $1
+       ORDER BY f.created_at DESC`,
+      [req.userId],
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err });
+  }
+};

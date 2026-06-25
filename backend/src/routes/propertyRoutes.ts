@@ -6,6 +6,9 @@ import {
   createProperty,
   updateProperty,
   deleteProperty,
+  getFavourites,
+  addFavourite,
+  removeFavourite,
 } from "../controllers/propertyController";
 import { protect } from "../middleware/auth";
 
@@ -20,5 +23,8 @@ router.get("/:id", getProperty);
 router.post("/", protect, createProperty);
 router.put("/:id", protect, updateProperty);
 router.delete("/:id", protect, deleteProperty);
+router.get("/favourites", protect, getFavourites);
+router.post("/:id/favourite", protect, addFavourite);
+router.delete("/:id/favourite", protect, removeFavourite);
 
 export default router;
