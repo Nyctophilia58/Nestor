@@ -13,6 +13,7 @@ import { useAuthStore } from "./store/authStore";
 import { useFavouriteStore } from "./store/favouriteStore";
 import Favourites from "./pages/Favourites";
 import { useThemeStore } from "./store/themeStore";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const { user } = useAuthStore();
@@ -40,6 +41,7 @@ function App() {
     <BrowserRouter>
       <Navbar />
       <Routes>
+        <Route path="*" element={<NotFound />} />
         <Route path="/" element={<Home />} />
         <Route path="/listings" element={<Listings />} />
         <Route path="/listings/:id" element={<PropertyDetail />} />
