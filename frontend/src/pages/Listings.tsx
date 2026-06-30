@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import api from "../lib/api";
+import api, { getErrorMessage } from "../lib/api";
 import { type Property } from "../types";
+import ErrorState from "../components/ErrorState";
 
 const Listings = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Filters
@@ -15,14 +19,28 @@ const Listings = () => {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
-  const fetchProperties = async () => {
+  const LIMIT = 9;
+
+  const fetchProperties = async (pageNum = 1) => {
     setLoading(true);
+    setPage(pageNum);
     try {
       const res = await api.get("/properties", {
-        params: { location, type, category, minPrice, maxPrice },
+        params: {
+          location,
+          type,
+          category,
+          minPrice,
+          maxPrice,
+          page: pageNum,
+          limit: LIMIT,
+        },
       });
-      setProperties(res.data);
-    } catch (err) {
+      setProperties(res.data.properties);
+      setTotalPages(res.data.totalPages);
+      setError("");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
       console.error(err);
     } finally {
       setLoading(false);
@@ -33,10 +51,18 @@ const Listings = () => {
     const loadInitial = async () => {
       try {
         const res = await api.get("/properties", {
-          params: { location: "", type: "", category: "" },
+          params: {
+            location: "",
+            type: "",
+            category: "",
+            page: 1,
+            limit: LIMIT,
+          },
         });
-        setProperties(res.data);
-      } catch (err) {
+        setProperties(res.data.properties);
+        setTotalPages(res.data.totalPages);
+      } catch (err: unknown) {
+        setError(getErrorMessage(err));
         console.error(err);
       } finally {
         setLoading(false);
@@ -46,7 +72,7 @@ const Listings = () => {
   }, []);
 
   const handleFilter = () => {
-    fetchProperties();
+    fetchProperties(1);
   };
 
   const handleReset = () => {
@@ -56,7 +82,7 @@ const Listings = () => {
     setMinPrice("");
     setMaxPrice("");
     setSearchParams({});
-    fetchProperties();
+    fetchProperties(1);
   };
 
   return (
@@ -126,7 +152,9 @@ const Listings = () => {
       </div>
 
       {/* Results */}
-      {loading ? (
+      {error && !loading ? (
+        <ErrorState message={error} onRetry={fetchProperties} />
+      ) : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="glass rounded-2xl h-64 animate-pulse" />
@@ -204,6 +232,51 @@ const Listings = () => {
               </div>
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && !loading && !error && (
+        <div className="flex items-center justify-center gap-2 mt-10">
+          <button
+            onClick={() => fetchProperties(page - 1)}
+            disabled={page <= 1}
+            className="px-4 py-2 glass text-white/70 text-sm rounded-lg hover:glass-light hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            ← Prev
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter((p) => {
+              // Show first, last, and 2 pages around current
+              return p === 1 || p === totalPages || Math.abs(p - page) <= 2;
+            })
+            .map((p, idx, arr) => (
+              <span key={p} className="flex items-center">
+                {/* Ellipsis if there's a gap */}
+                {idx > 0 && p - arr[idx - 1] > 1 && (
+                  <span className="px-2 text-white/30">…</span>
+                )}
+                <button
+                  onClick={() => fetchProperties(p)}
+                  className={`w-10 h-10 rounded-lg text-sm font-medium transition ${
+                    p === page
+                      ? "bg-blue-500/80 text-white"
+                      : "glass text-white/70 hover:glass-light hover:text-white"
+                  }`}
+                >
+                  {p}
+                </button>
+              </span>
+            ))}
+
+          <button
+            onClick={() => fetchProperties(page + 1)}
+            disabled={page >= totalPages}
+            className="px-4 py-2 glass text-white/70 text-sm rounded-lg hover:glass-light hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Next →
+          </button>
         </div>
       )}
     </div>

@@ -2,40 +2,62 @@ import { Request, Response } from "express";
 import pool from "../config/db";
 import { AuthRequest } from "../middleware/auth";
 
-// GET all properties (with optional filters)
+// GET all properties (with optional filters & pagination)
 export const getProperties = async (req: Request, res: Response) => {
   const { type, category, location, minPrice, maxPrice } = req.query;
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(
+    50,
+    Math.max(1, parseInt(req.query.limit as string) || 9),
+  );
+  const offset = (page - 1) * limit;
 
   try {
-    let query = "SELECT * FROM properties WHERE 1=1";
+    let whereClause = "WHERE 1=1";
     const values: any[] = [];
     let i = 1;
 
     if (type) {
-      query += ` AND type = $${i++}`;
+      whereClause += ` AND type = $${i++}`;
       values.push(type);
     }
     if (category) {
-      query += ` AND category = $${i++}`;
+      whereClause += ` AND category = $${i++}`;
       values.push(category);
     }
     if (location) {
-      query += ` AND location ILIKE $${i++}`;
+      whereClause += ` AND location ILIKE $${i++}`;
       values.push(`%${location}%`);
     }
     if (minPrice) {
-      query += ` AND price >= $${i++}`;
+      whereClause += ` AND price >= $${i++}`;
       values.push(minPrice);
     }
     if (maxPrice) {
-      query += ` AND price <= $${i++}`;
+      whereClause += ` AND price <= $${i++}`;
       values.push(maxPrice);
     }
 
-    query += " ORDER BY created_at DESC";
+    // Get total count
+    const countResult = await pool.query(
+      `SELECT COUNT(*) FROM properties ${whereClause}`,
+      values,
+    );
+    const total = parseInt(countResult.rows[0].count, 10);
 
-    const result = await pool.query(query, values);
-    res.json(result.rows);
+    // Get paginated data
+    const dataResult = await pool.query(
+      `SELECT * FROM properties ${whereClause} ORDER BY created_at DESC LIMIT $${i++} OFFSET $${i}`,
+      [...values, limit, offset],
+    );
+
+    res.json({
+      properties: dataResult.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err });
   }
