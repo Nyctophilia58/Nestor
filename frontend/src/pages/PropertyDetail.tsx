@@ -7,6 +7,7 @@ import { useAuthStore } from "../store/authStore";
 import FavouriteButton from "../components/FavouriteButton";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ErrorState from "../components/ErrorState";
+import ImageCarousel from "../components/ImageCarousel";
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -14,7 +15,6 @@ const PropertyDetail = () => {
   const { user } = useAuthStore();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeImage, setActiveImage] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [fetchError, setFetchError] = useState("");
 
@@ -86,40 +86,7 @@ const PropertyDetail = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       {/* Images */}
-      <div className="mb-8">
-        <div className="h-80 glass rounded-2xl overflow-hidden mb-3">
-          {property.images?.[activeImage] ? (
-            <img
-              src={property.images[activeImage]}
-              alt={property.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-6xl text-white/20">
-              🏠
-            </div>
-          )}
-        </div>
-
-        {/* Thumbnail Strip */}
-        {property.images?.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto">
-            {property.images.map((img, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveImage(i)}
-                className={`flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition ${
-                  activeImage === i
-                    ? "border-blue-400"
-                    : "border-transparent opacity-60 hover:opacity-100"
-                }`}
-              >
-                <img src={img} alt="" className="w-full h-full object-cover" />
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <ImageCarousel images={property.images || []} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left — Details */}
