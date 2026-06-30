@@ -35,7 +35,7 @@ const Login = () => {
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-white">Welcome back</h1>
           <p className="text-white/50 text-sm mt-1">
-            Login to your Varaden account
+            Login to your Nestor account
           </p>
         </div>
 

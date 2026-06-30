@@ -53,7 +53,7 @@ const Register = () => {
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-white">Create an account</h1>
-          <p className="text-white/50 text-sm mt-1">Join Varaden today</p>
+          <p className="text-white/50 text-sm mt-1">Join Nestor today</p>
         </div>
 
         {/* Error */}
