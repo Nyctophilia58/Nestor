@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import api from "../lib/api";
 import { type Property } from "../types";
 import { useAuthStore } from "../store/authStore";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const Dashboard = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchMyProperties = async () => {
@@ -30,12 +33,15 @@ const Dashboard = () => {
     return null;
   }
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Delete this property?")) return;
+  const handleDelete = async () => {
+    if (deleteId === null) return;
     try {
-      await api.delete(`/properties/${id}`);
-      setProperties((prev) => prev.filter((p) => p.id !== id));
+      await api.delete(`/properties/${deleteId}`);
+      setProperties((prev) => prev.filter((p) => p.id !== deleteId));
+      setDeleteId(null);
+      toast.success("Property deleted");
     } catch (err) {
+      toast.error("Failed to delete property");
       console.error(err);
     }
   };
@@ -177,7 +183,7 @@ const Dashboard = () => {
                   View
                 </Link>
                 <button
-                  onClick={() => handleDelete(property.id)}
+                  onClick={() => setDeleteId(property.id)}
                   className="px-3 py-1.5 text-xs bg-red-500/15 text-red-400 rounded-lg hover:bg-red-500/25 transition"
                 >
                   Delete
@@ -187,6 +193,16 @@ const Dashboard = () => {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteId !== null}
+        message="Delete this property? This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 };

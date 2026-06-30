@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { useAuthStore } from "../store/authStore";
 import api from "../lib/api";
 
@@ -20,6 +21,7 @@ const Login = () => {
     try {
       const res = await api.post("/auth/login", { email, password });
       setAuth(res.data.user, res.data.token);
+      toast.success("Welcome back!");
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");

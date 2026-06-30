@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { useAuthStore } from "../store/authStore";
 import api from "../lib/api";
 
@@ -39,6 +40,7 @@ const Register = () => {
         password: form.password,
       });
       setAuth(res.data.user, res.data.token);
+      toast.success("Account created! Welcome to Nestor");
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");

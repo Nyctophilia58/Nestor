@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import api from "../lib/api";
 import { type Property } from "../types";
 import { useAuthStore } from "../store/authStore";
 import FavouriteButton from "../components/FavouriteButton";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -28,16 +30,20 @@ const PropertyDetail = () => {
     fetchProperty();
   }, [id]);
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this property?")) return;
     setDeleting(true);
     try {
       await api.delete(`/properties/${id}`);
+      toast.success("Property deleted");
       navigate("/listings");
     } catch (err) {
+      toast.error("Failed to delete property");
       console.error(err);
     } finally {
       setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -162,7 +168,7 @@ const PropertyDetail = () => {
           {user && user.id === property.user_id && (
             <div className="mt-8 flex gap-3">
               <button
-                onClick={handleDelete}
+                onClick={() => setShowDeleteConfirm(true)}
                 disabled={deleting}
                 className="px-5 py-2.5 bg-red-500/15 text-red-400 border border-red-400/30 text-sm font-medium rounded-lg hover:bg-red-500/25 transition disabled:opacity-50"
               >
@@ -224,6 +230,17 @@ const PropertyDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Property?"
+        message="Are you sure you want to delete this property? This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
 import ImageUpload from "../components/ImageUpload";
@@ -54,6 +55,7 @@ const AddProperty = () => {
       };
 
       const res = await api.post("/properties", payload);
+      toast.success("Property listed successfully!");
       navigate(`/listings/${res.data.id}`);
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");

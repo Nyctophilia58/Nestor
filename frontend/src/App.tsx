@@ -14,6 +14,7 @@ import { useFavouriteStore } from "./store/favouriteStore";
 import Favourites from "./pages/Favourites";
 import { useThemeStore } from "./store/themeStore";
 import NotFound from "./pages/NotFound";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const { user } = useAuthStore();
@@ -39,6 +40,18 @@ function App() {
 
   return (
     <BrowserRouter>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: "rgba(30, 30, 46, 0.9)",
+            color: "#fff",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            fontSize: "14px",
+          },
+        }}
+      />
       <Navbar />
       <Routes>
         <Route path="*" element={<NotFound />} />
