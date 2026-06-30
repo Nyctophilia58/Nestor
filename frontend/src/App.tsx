@@ -12,10 +12,20 @@ import api from "./lib/api";
 import { useAuthStore } from "./store/authStore";
 import { useFavouriteStore } from "./store/favouriteStore";
 import Favourites from "./pages/Favourites";
+import { useThemeStore } from "./store/themeStore";
 
 function App() {
   const { user } = useAuthStore();
   const { set } = useFavouriteStore();
+  const { dark } = useThemeStore();
+
+  useEffect(() => {
+    if (dark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
