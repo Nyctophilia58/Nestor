@@ -14,13 +14,10 @@ const ImageUpload = ({ onUpload }: Props) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    // Show local previews immediately
     const localPreviews = Array.from(files).map((file) =>
       URL.createObjectURL(file),
     );
     setPreviews(localPreviews);
-
-    // Upload to backend
     setUploading(true);
     setError("");
 
@@ -48,14 +45,7 @@ const ImageUpload = ({ onUpload }: Props) => {
 
   return (
     <div>
-      {/* Upload Area */}
-      <label
-        className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-xl cursor-pointer transition ${
-          uploading
-            ? "border-blue-300 bg-blue-50"
-            : "border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50"
-        }`}
-      >
+      <label className="flex flex-col items-center justify-center w-full h-36 glass rounded-xl cursor-pointer hover:glass-light transition">
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
@@ -66,36 +56,34 @@ const ImageUpload = ({ onUpload }: Props) => {
         />
         {uploading ? (
           <div className="text-center">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-sm text-blue-500">Uploading...</p>
+            <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <p className="text-sm text-blue-300">Uploading...</p>
           </div>
         ) : (
           <div className="text-center">
             <p className="text-3xl mb-2">📸</p>
-            <p className="text-sm text-gray-500">Click to upload images</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-sm text-white/60">Click to upload images</p>
+            <p className="text-xs text-white/30 mt-1">
               JPG, PNG, WEBP — max 5MB each — up to 5 images
             </p>
           </div>
         )}
       </label>
 
-      {/* Error */}
-      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+      {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
 
-      {/* Previews */}
       {previews.length > 0 && (
         <div className="flex gap-2 mt-3 flex-wrap">
           {previews.map((src, i) => (
             <div
               key={i}
-              className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200"
+              className="relative w-20 h-20 rounded-lg overflow-hidden glass"
             >
               <img src={src} alt="" className="w-full h-full object-cover" />
               <button
                 type="button"
                 onClick={() => removeImage(i)}
-                className="absolute top-0.5 right-0.5 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-600"
+                className="absolute top-0.5 right-0.5 bg-red-500/90 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-600"
               >
                 ✕
               </button>
