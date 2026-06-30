@@ -43,7 +43,7 @@ const Register = () => {
       toast.success("Account created! Welcome to Nestor");
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(err.friendlyMessage);
     } finally {
       setLoading(false);
     }

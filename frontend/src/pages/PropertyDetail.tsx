@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import api from "../lib/api";
+import api, { getErrorMessage } from "../lib/api";
 import { type Property } from "../types";
 import { useAuthStore } from "../store/authStore";
 import FavouriteButton from "../components/FavouriteButton";
 import ConfirmDialog from "../components/ConfirmDialog";
+import ErrorState from "../components/ErrorState";
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -15,13 +16,16 @@ const PropertyDetail = () => {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [deleting, setDeleting] = useState(false);
+  const [fetchError, setFetchError] = useState("");
 
   useEffect(() => {
     const fetchProperty = async () => {
       try {
         const res = await api.get(`/properties/${id}`);
         setProperty(res.data);
-      } catch (err) {
+        setFetchError("");
+      } catch (err: unknown) {
+        setFetchError(getErrorMessage(err));
         console.error(err);
       } finally {
         setLoading(false);
@@ -38,8 +42,8 @@ const PropertyDetail = () => {
       await api.delete(`/properties/${id}`);
       toast.success("Property deleted");
       navigate("/listings");
-    } catch (err) {
-      toast.error("Failed to delete property");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
       console.error(err);
     } finally {
       setDeleting(false);
@@ -57,11 +61,24 @@ const PropertyDetail = () => {
     );
   }
 
+  if (fetchError) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        <ErrorState
+          message={fetchError}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
+
   if (!property) {
     return (
-      <div className="text-center py-20 text-white/30">
-        <p className="text-5xl mb-4">🏚️</p>
-        <p className="text-lg font-medium">Property not found</p>
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="text-center py-20 text-white/30">
+          <p className="text-5xl mb-4">🏚️</p>
+          <p className="text-lg font-medium">Property not found</p>
+        </div>
       </div>
     );
   }

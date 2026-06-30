@@ -1,20 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../lib/api";
+import api, { getErrorMessage } from "../lib/api";
 import { type Property } from "../types";
 import { useAuthStore } from "../store/authStore";
+import ErrorState from "../components/ErrorState";
 
 const Favourites = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     api
       .get("/properties/favourites")
       .then((res) => setProperties(res.data))
-      .catch(console.error)
+      .catch((err: unknown) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
   }, []);
 
@@ -27,7 +29,9 @@ const Favourites = () => {
     <div className="max-w-5xl mx-auto px-4 py-10">
       <h1 className="text-2xl font-bold text-white mb-8">Saved Properties</h1>
 
-      {loading ? (
+      {error ? (
+        <ErrorState message={error} onRetry={() => window.location.reload()} />
+      ) : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="glass rounded-2xl h-64 animate-pulse" />

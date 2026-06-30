@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import api from "../lib/api";
+import api, { getErrorMessage } from "../lib/api";
 import { type Property } from "../types";
 import { useAuthStore } from "../store/authStore";
 import ConfirmDialog from "../components/ConfirmDialog";
+import ErrorState from "../components/ErrorState";
 
 const Dashboard = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -18,7 +20,8 @@ const Dashboard = () => {
       try {
         const res = await api.get("/properties/mine");
         setProperties(res.data);
-      } catch (err) {
+      } catch (err: unknown) {
+        setError(getErrorMessage(err));
         console.error(err);
       } finally {
         setLoading(false);
@@ -40,8 +43,8 @@ const Dashboard = () => {
       setProperties((prev) => prev.filter((p) => p.id !== deleteId));
       setDeleteId(null);
       toast.success("Property deleted");
-    } catch (err) {
-      toast.error("Failed to delete property");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
       console.error(err);
     }
   };
@@ -98,10 +101,10 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* My Listings */}
-      <h2 className="text-lg font-semibold text-white mb-4">My Listings</h2>
-
-      {loading ? (
+      {/* Error */}
+      {error ? (
+        <ErrorState message={error} onRetry={() => window.location.reload()} />
+      ) : loading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="h-24 glass rounded-2xl animate-pulse" />

@@ -58,7 +58,7 @@ const AddProperty = () => {
       toast.success("Property listed successfully!");
       navigate(`/listings/${res.data.id}`);
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(err.friendlyMessage);
     } finally {
       setLoading(false);
     }

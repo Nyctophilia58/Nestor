@@ -24,7 +24,7 @@ const Login = () => {
       toast.success("Welcome back!");
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(err.friendlyMessage);
     } finally {
       setLoading(false);
     }
