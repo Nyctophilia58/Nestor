@@ -1,0 +1,105 @@
+@baseUrl = http://localhost:5000/api
+
+### Health Check
+GET http://localhost:5000/
+
+### ─── Auth ───
+
+### Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "phone": "01700000000"
+}
+
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+### ─── Properties (Public) ───
+
+### Get All Properties (with pagination & filters)
+GET {{baseUrl}}/properties?page=1&limit=9
+
+### Get All Properties (with filters)
+GET {{baseUrl}}/properties?type=rent&category=apartment&location=dhanmondi&minPrice=15000&maxPrice=30000&page=1&limit=9
+
+### Get Single Property
+GET {{baseUrl}}/properties/1
+
+### ─── Properties (Protected) ───
+# @token = your_jwt_token_here
+
+### Get My Properties
+GET {{baseUrl}}/properties/mine
+Authorization: Bearer {{token}}
+
+### Create Property
+POST {{baseUrl}}/properties
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Spacious 3 Bed Apartment in Dhanmondi",
+  "description": "A beautiful apartment with modern amenities...",
+  "price": 25000,
+  "type": "rent",
+  "category": "apartment",
+  "location": "Dhanmondi, Dhaka",
+  "area": 1200,
+  "bedrooms": 3,
+  "bathrooms": 2,
+  "images": []
+}
+
+### Update Property
+PUT {{baseUrl}}/properties/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Updated Title",
+  "description": "Updated description...",
+  "price": 28000,
+  "type": "rent",
+  "category": "apartment",
+  "location": "Dhanmondi, Dhaka",
+  "area": 1300,
+  "bedrooms": 3,
+  "bathrooms": 2,
+  "images": []
+}
+
+### Delete Property
+DELETE {{baseUrl}}/properties/1
+Authorization: Bearer {{token}}
+
+### ─── Favourites ───
+
+### Get My Favourites
+GET {{baseUrl}}/properties/favourites
+Authorization: Bearer {{token}}
+
+### Add to Favourites
+POST {{baseUrl}}/properties/1/favourite
+Authorization: Bearer {{token}}
+
+### Remove from Favourites
+DELETE {{baseUrl}}/properties/1/favourite
+Authorization: Bearer {{token}}
+
+### ─── Upload (requires multipart/form-data) ───
+# Use a tool like Postman or cURL for file uploads:
+# curl -X POST http://localhost:5000/api/upload \
+#   -H "Authorization: Bearer YOUR_TOKEN" \
+#   -F "images=@/path/to/image.jpg" \
+#   -F "images=@/path/to/image2.jpg"
