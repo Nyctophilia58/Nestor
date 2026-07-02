@@ -33,7 +33,7 @@ app.use("/api/upload", uploadRoutes);
 
 // Health check
 app.get("/", (req, res) => {
-  res.json({ message: "Varaden API is running ✅" });
+  res.json({ message: "Nestor API is running ✅" });
 });
 
 app.listen(PORT, () => {
