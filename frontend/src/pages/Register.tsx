@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../store/authStore";
-import api from "../lib/api";
+import api, { getErrorMessage } from "../lib/api";
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -42,8 +42,8 @@ const Register = () => {
       setAuth(res.data.user, res.data.token);
       toast.success("Account created! Welcome to Nestor");
       navigate("/");
-    } catch (err) {
-      setError(err.friendlyMessage);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

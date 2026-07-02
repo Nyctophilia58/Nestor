@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../store/authStore";
-import api from "../lib/api";
+import api, { getErrorMessage } from "../lib/api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -23,8 +23,8 @@ const Login = () => {
       setAuth(res.data.user, res.data.token);
       toast.success("Welcome back!");
       navigate("/");
-    } catch (err) {
-      setError(err.friendlyMessage);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

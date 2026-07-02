@@ -33,7 +33,7 @@ function App() {
     if (user) {
       api
         .get("/properties/favourites")
-        .then((res) => set(res.data.map((p) => p.id)))
+        .then((res) => set((res.data as { id: number }[]).map((p) => p.id)))
         .catch(() => {});
     }
   }, [user]);
