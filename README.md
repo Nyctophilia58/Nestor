@@ -2,8 +2,6 @@
 
 A full-stack real estate listing platform built with React, TypeScript, Express, and PostgreSQL.
 
-![Nestor Screenshot](https://i.imgur.com/placeholder.png)
-
 ## Features
 
 - 🔍 **Browse Properties** — Filter by location, type, category, and price range
@@ -41,7 +39,7 @@ A full-stack real estate listing platform built with React, TypeScript, Express,
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/yourusername/Nestor.git
+git clone https://github.com/Nyctophilia58/Nestor.git
 cd Nestor
 ```
 
