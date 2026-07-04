@@ -15,6 +15,7 @@ import Favourites from "./pages/Favourites";
 import { useThemeStore } from "./store/themeStore";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "react-hot-toast";
+import AuthHandler from "./components/AuthHandler";
 
 function App() {
   const { user } = useAuthStore();
@@ -52,6 +53,7 @@ function App() {
           },
         }}
       />
+      <AuthHandler />
       <Navbar />
       <Routes>
         <Route path="*" element={<NotFound />} />
