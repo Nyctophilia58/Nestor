@@ -19,6 +19,7 @@ const Login = () => {
   useEffect(() => {
     const err = searchParams.get("error");
     if (err === "google_auth_failed") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(
         "No account found with this Google account. Please register first.",
       );
