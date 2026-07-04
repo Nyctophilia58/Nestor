@@ -48,13 +48,15 @@ const Listings = () => {
   };
 
   useEffect(() => {
-    const loadInitial = async () => {
+    const initialFetch = async () => {
       try {
         const res = await api.get("/properties", {
           params: {
-            location: "",
-            type: "",
-            category: "",
+            location,
+            type,
+            category,
+            minPrice,
+            maxPrice,
             page: 1,
             limit: LIMIT,
           },
@@ -68,7 +70,7 @@ const Listings = () => {
         setLoading(false);
       }
     };
-    loadInitial();
+    initialFetch();
   }, []);
 
   const handleFilter = () => {

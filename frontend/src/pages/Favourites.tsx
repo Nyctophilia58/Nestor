@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import api, { getErrorMessage } from "../lib/api";
 import { type Property } from "../types";
 import { useAuthStore } from "../store/authStore";
@@ -7,7 +7,7 @@ import ErrorState from "../components/ErrorState";
 
 const Favourites = () => {
   const { user } = useAuthStore();
-  const navigate = useNavigate();
+
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,10 +20,7 @@ const Favourites = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  if (!user) {
-    navigate("/login");
-    return null;
-  }
+  if (!user) return <Navigate to="/login" replace />;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">

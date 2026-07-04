@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api, { getErrorMessage } from "../lib/api";
 import { type Property } from "../types";
@@ -31,10 +31,7 @@ const Dashboard = () => {
   }, []);
 
   // Redirect if not logged in
-  if (!user) {
-    navigate("/login");
-    return null;
-  }
+  if (!user) return <Navigate to="/login" replace />;
 
   const handleDelete = async () => {
     if (deleteId === null) return;

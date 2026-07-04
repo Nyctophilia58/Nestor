@@ -45,9 +45,11 @@ export const getProperties = async (req: Request, res: Response) => {
     );
     const total = parseInt(countResult.rows[0].count, 10);
 
-    // Get paginated data
+    // Build final param list: append limit & offset to existing values
+    const limitIndex = i++;
+    const offsetIndex = i;
     const dataResult = await pool.query(
-      `SELECT * FROM properties ${whereClause} ORDER BY created_at DESC LIMIT $${i++} OFFSET $${i}`,
+      `SELECT * FROM properties ${whereClause} ORDER BY created_at DESC LIMIT $${limitIndex} OFFSET $${offsetIndex}`,
       [...values, limit, offset],
     );
 

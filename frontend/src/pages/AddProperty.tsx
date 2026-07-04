@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api, { getErrorMessage } from "../lib/api";
 import { useAuthStore } from "../store/authStore";
@@ -24,8 +24,7 @@ const AddProperty = () => {
   });
 
   if (!user) {
-    navigate("/login");
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   const handleChange = (
