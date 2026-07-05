@@ -16,6 +16,10 @@ import { useThemeStore } from "./store/themeStore";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "react-hot-toast";
 import AuthHandler from "./components/AuthHandler";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import About from "./pages/About";
+import TermsOfService from "./pages/TermsOfService";
+import HelpCenter from "./pages/HelpCenter";
 
 function App() {
   const { user } = useAuthStore();
@@ -65,6 +69,10 @@ function App() {
         <Route path="/add-property" element={<AddProperty />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/favourites" element={<Favourites />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/help-center" element={<HelpCenter />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
       </Routes>
     </BrowserRouter>
   );

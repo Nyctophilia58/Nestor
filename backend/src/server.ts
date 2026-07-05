@@ -6,6 +6,7 @@ import passport from "./config/passport";
 import authRoutes from "./routes/authRoutes";
 import propertyRoutes from "./routes/propertyRoutes";
 import uploadRoutes from "./routes/uploadRoutes";
+import ticketRoutes from "./routes/ticketRoutes";
 import path from "path";
 import cookieParser from "cookie-parser";
 
@@ -39,6 +40,9 @@ app.use("/api/upload", uploadRoutes);
 app.get("/", (req, res) => {
   res.json({ message: "Nestor API is running ✅" });
 });
+
+// Ticket route
+app.use("/api/tickets", ticketRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
