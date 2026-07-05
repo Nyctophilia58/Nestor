@@ -20,15 +20,6 @@ const Navbar = () => {
           Nes<span className="text-emerald-400">tor</span>
         </Link>
 
-        {/* Links — removed; actions live on the Home / Listings pages */}
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-white/70">
-          {user && (
-            <Link to="/add-property" className="hover:text-white transition">
-              Post Property
-            </Link>
-          )}
-        </div>
-
         {/* Right */}
         <div className="flex items-center gap-3">
           {/* Theme Toggle */}

@@ -127,7 +127,7 @@ const Listings = () => {
           value={minPrice}
           onChange={(e) => setMinPrice(e.target.value)}
           placeholder="Min Price"
-          className="px-4 py-2 glass rounded-lg text-white placeholder-white/40 text-sm w-28 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+          className="px-4 glass rounded-lg text-white placeholder-white/40 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
         />
 
         <input
@@ -135,7 +135,7 @@ const Listings = () => {
           value={maxPrice}
           onChange={(e) => setMaxPrice(e.target.value)}
           placeholder="Max Price"
-          className="px-4 py-2 glass rounded-lg text-white placeholder-white/40 text-sm w-28 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+          className="px-4 glass rounded-lg text-white placeholder-white/40 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
         />
 
         <button
