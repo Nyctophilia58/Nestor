@@ -105,11 +105,8 @@ const Register = () => {
             </button>
 
             <div className="relative py-2">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
-              </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-[#0c1028] text-white/40">or</span>
+                <span className="px-2 text-white/40">or</span>
               </div>
             </div>
 
