@@ -18,7 +18,7 @@ const PORT = Number(process.env.PORT) || 3000;
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://nestor-two.vercel.app/"],
+    origin: ["http://localhost:5173", "https://nestor-two.vercel.app"],
     credentials: true,
   }),
 );
