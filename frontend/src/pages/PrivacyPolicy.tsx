@@ -134,7 +134,7 @@ const PrivacyPolicy = () => {
               </p>
             )}
 
-            {"items" in section && (
+            {"items" in section && section.items && (
               <div className="space-y-3">
                 {section.items.map((item) => (
                   <div key={item.label} className="flex items-start gap-3">
