@@ -46,7 +46,7 @@ const Login = () => {
   const handleGoogleLogin = () => {
     window.location.href = `${
       import.meta.env.VITE_API_URL || "http://localhost:5000/api"
-    }/auth/google?mode=login`;
+    }/auth/google/callback?mode=login`;
   };
 
   return (
