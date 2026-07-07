@@ -56,6 +56,7 @@ function initGoogleStrategy() {
               id: user.id,
               name: user.name || profile.displayName,
               email: user.email,
+              role: user.role || "tenant",
               avatar: user.avatar || profile.photos?.[0]?.value,
             });
           }
@@ -69,21 +70,14 @@ function initGoogleStrategy() {
             });
           }
 
-          // Register mode: create new user
-          const randomPwd = Math.random().toString(36).slice(-20);
-          const hashedPwd = await bcryptjs.hash(randomPwd, 10);
-          const newUser = await pool.query(
-            "INSERT INTO users (name, email, google_id, avatar, password) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, avatar",
-            [
-              profile.displayName,
-              email,
-              profile.id,
-              profile.photos?.[0]?.value,
-              hashedPwd,
-            ],
-          );
-
-          done(null, newUser.rows[0]);
+          // Register mode: don't create user yet — pass profile for form completion
+          done(null, {
+            _pendingRegistration: true,
+            name: profile.displayName,
+            email: email,
+            google_id: profile.id,
+            avatar: profile.photos?.[0]?.value || "",
+          });
         } catch (err) {
           done(err as Error, false);
         }

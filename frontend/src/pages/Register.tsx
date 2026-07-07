@@ -1,23 +1,62 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../store/authStore";
 import api, { getErrorMessage } from "../lib/api";
 
+interface GoogleData {
+  google_id: string;
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+/** Parse Google OAuth data from URL params during initial render */
+function getInitialGoogleData(): GoogleData | null {
+  const params = new URLSearchParams(window.location.search);
+  const googleId = params.get("google_id");
+  const name = params.get("name");
+  const email = params.get("email");
+  if (googleId && name && email) {
+    return {
+      google_id: googleId,
+      name: decodeURIComponent(name),
+      email: decodeURIComponent(email),
+      avatar: params.get("avatar") || "",
+    };
+  }
+  return null;
+}
+
 const Register = () => {
-  const [method, setMethod] = useState<"email" | null>(null);
+  // Capture Google OAuth data from URL once, no setState inside effects
+  const [googleData] = useState<GoogleData | null>(getInitialGoogleData);
+
+  const [method, setMethod] = useState<"email" | null>(
+    googleData ? "email" : null,
+  );
   const [form, setForm] = useState({
-    name: "",
-    email: "",
+    name: googleData?.name || "",
+    email: googleData?.email || "",
     phone: "",
     password: "",
     confirmPassword: "",
+    role: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
+
+  const fromOAuth = !!googleData;
+
+  // Clean up OAuth params from the URL after capturing them
+  useEffect(() => {
+    if (googleData) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [googleData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,6 +65,29 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Complete Google registration: create the user with phone + role
+    if (fromOAuth && googleData) {
+      setLoading(true);
+      try {
+        const res = await api.post("/auth/complete-google", {
+          google_id: googleData.google_id,
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          role: form.role,
+          avatar: googleData.avatar,
+        });
+        setAuth(res.data.user, res.data.token);
+        toast.success("Account created! Welcome to Nestor");
+        navigate("/");
+      } catch (err: unknown) {
+        setError(getErrorMessage(err));
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     if (form.password !== form.confirmPassword) {
       return setError("Passwords do not match");
@@ -39,6 +101,7 @@ const Register = () => {
         email: form.email,
         phone: form.phone,
         password: form.password,
+        role: form.role,
       });
       setAuth(res.data.user, res.data.token);
       toast.success("Account created! Welcome to Nestor");
@@ -117,13 +180,110 @@ const Register = () => {
               Register with Email
             </button>
           </div>
+        ) : fromOAuth ? (
+          /* Google OAuth — Complete profile with phone + role */
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name — from Google, read-only */}
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                disabled
+                className="w-full px-4 py-2.5 glass rounded-lg text-white/60 text-sm cursor-not-allowed"
+              />
+            </div>
+
+            {/* Email — from Google, read-only */}
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                disabled
+                className="w-full px-4 py-2.5 glass rounded-lg text-white/60 text-sm cursor-not-allowed"
+              />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-1">
+                Phone <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="01700000000"
+                required
+                className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+              />
+            </div>
+
+            {/* Role selection */}
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-2">
+                I am a <span className="text-red-400">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  {
+                    value: "tenant",
+                    label: "🔍 Tenant",
+                    desc: "Looking for a property",
+                  },
+                  {
+                    value: "landlord",
+                    label: "🏠 Landlord",
+                    desc: "Listing a property",
+                  },
+                ].map((r) => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, role: r.value })}
+                    className={`p-3 rounded-xl border text-left transition ${
+                      form.role === r.value
+                        ? "border-emerald-400 bg-emerald-500/15"
+                        : "glass border-white/10 hover:border-white/20"
+                    }`}
+                  >
+                    <p className="text-white text-sm font-medium">{r.label}</p>
+                    <p className="text-white/40 text-xs mt-0.5">{r.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Info box about roles */}
+            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-400/20 text-xs text-emerald-300/80 leading-relaxed">
+              💡 <strong>Not sure?</strong> A <strong>Tenant</strong> looks for
+              a property to rent, while a <strong>Landlord</strong> lists
+              properties for rent or sale.
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-emerald-500/80 backdrop-blur text-white text-sm font-medium rounded-lg hover:bg-emerald-500 transition disabled:opacity-50"
+            >
+              {loading ? "Creating account..." : "Complete Profile"}
+            </button>
+          </form>
         ) : (
-          /* Email Form */
+          /* Email Registration — Full form */
           <>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1">
-                  Full Name
+                  Full Name <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
@@ -138,7 +298,7 @@ const Register = () => {
 
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1">
-                  Email
+                  Email <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="email"
@@ -153,7 +313,7 @@ const Register = () => {
 
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1">
-                  Phone
+                  Phone <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="tel"
@@ -161,13 +321,57 @@ const Register = () => {
                   value={form.phone}
                   onChange={handleChange}
                   placeholder="01700000000"
+                  required
                   className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
                 />
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">
+                  I am a <span className="text-red-400">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    {
+                      value: "tenant",
+                      label: "🔍 Tenant",
+                      desc: "Looking for a property",
+                    },
+                    {
+                      value: "landlord",
+                      label: "🏠 Landlord",
+                      desc: "Listing a property",
+                    },
+                  ].map((r) => (
+                    <button
+                      key={r.value}
+                      type="button"
+                      onClick={() => setForm({ ...form, role: r.value })}
+                      className={`p-3 rounded-xl border text-left transition ${
+                        form.role === r.value
+                          ? "border-emerald-400 bg-emerald-500/15"
+                          : "glass border-white/10 hover:border-white/20"
+                      }`}
+                    >
+                      <p className="text-white text-sm font-medium">
+                        {r.label}
+                      </p>
+                      <p className="text-white/40 text-xs mt-0.5">{r.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Info box about roles */}
+              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-400/20 text-xs text-emerald-300/80 leading-relaxed">
+                💡 <strong>Not sure?</strong> A <strong>Tenant</strong> looks
+                for a property to rent, while a <strong>Landlord</strong> lists
+                properties for rent or sale.
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-white/70 mb-1">
-                  Password
+                  Password <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="password"
@@ -182,7 +386,7 @@ const Register = () => {
 
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-1">
-                  Confirm Password
+                  Confirm Password <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="password"

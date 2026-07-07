@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import pool from "../config/db";
 
 export const register = async (req: Request, res: Response) => {
-  const { name, email, password, phone } = req.body;
+  const { name, email, password, phone, role } = req.body;
 
   // check if user already exists
   try {
@@ -19,18 +19,25 @@ export const register = async (req: Request, res: Response) => {
     // hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Only allow tenant or landlord on register — never admin
+    const safeRole = role === "landlord" ? "landlord" : "tenant";
+
     // insert user into database
     const result = await pool.query(
-      "INSERT INTO users (name, email, password, phone) VALUES ($1, $2, $3, $4) RETURNING id, name, email",
-      [name, email, hashedPassword, phone],
+      "INSERT INTO users (name, email, password, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role",
+      [name, email, hashedPassword, phone, safeRole],
     );
 
     const user = result.rows[0];
 
     // generate token
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET!,
+      {
+        expiresIn: "7d",
+      },
+    );
     res.status(201).json({ user, token });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error });

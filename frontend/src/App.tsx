@@ -20,6 +20,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import About from "./pages/About";
 import TermsOfService from "./pages/TermsOfService";
 import HelpCenter from "./pages/HelpCenter";
+import AdminPanel from "./pages/AdminPanel";
 
 function App() {
   const { user } = useAuthStore();
@@ -62,6 +63,7 @@ function App() {
       <Routes>
         <Route path="*" element={<NotFound />} />
         <Route path="/" element={<Home />} />
+        <Route path="/admin" element={<AdminPanel />} />
         <Route path="/listings" element={<Listings />} />
         <Route path="/listings/:id" element={<PropertyDetail />} />
         <Route path="/login" element={<Login />} />

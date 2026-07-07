@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import Footer from "../components/Footer";
+import { useAuthStore } from "../store/authStore";
 
 const Home = () => {
+  const { user } = useAuthStore();
   const [search, setSearch] = useState("");
   const [type, setType] = useState("rent");
   const navigate = useNavigate();
@@ -175,96 +177,98 @@ const Home = () => {
       </div>
 
       {/* For Landlords */}
-      <div className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-white mb-4 text-center">
-            For Landlords
-          </h2>
-          <p className="text-white/50 text-center max-w-2xl mx-auto mb-10">
-            Fill vacant properties faster. Reach real tenants instantly and
-            manage listings with a modern platform built for Bangladesh.
-          </p>
-          <div className="glass-light rounded-2xl p-8">
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              {[
-                { value: "128%", label: "Avg. Monthly Views", icon: "📈" },
-                { value: "80%", label: "Response Rate", icon: "💬" },
-                { value: "3x", label: "Faster to Fill", icon: "⚡" },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="glass-card rounded-xl p-5 text-center"
-                >
-                  <p className="text-2xl mb-1">{stat.icon}</p>
-                  <p className="text-2xl font-bold text-emerald-400">
-                    {stat.value}
-                  </p>
-                  <p className="text-xs text-white/50 mt-1">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* How it works */}
-            <h3 className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-4">
-              How it works
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-3 mb-8">
-              {[
-                {
-                  step: "01",
-                  title: "Post Your Property",
-                  desc: "Fill in the details, upload photos, and go live in minutes — completely free.",
-                  icon: "🏠",
-                },
-                {
-                  step: "02",
-                  title: "Get Direct Inquiries",
-                  desc: "Tenants call or WhatsApp you directly. No middlemen, no commission cuts.",
-                  icon: "📞",
-                },
-                {
-                  step: "03",
-                  title: "Manage with Ease",
-                  desc: "Track, edit and remove listings anytime from your dashboard.",
-                  icon: "📋",
-                },
-              ].map((item) => (
-                <div key={item.step} className="glass-card rounded-xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                      {item.step}
-                    </span>
-                    <span className="text-lg">{item.icon}</span>
+      {(!user || user.role !== "tenant") && (
+        <div className="py-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold text-white mb-4 text-center">
+              For Landlords
+            </h2>
+            <p className="text-white/50 text-center max-w-2xl mx-auto mb-10">
+              Fill vacant properties faster. Reach real tenants instantly and
+              manage listings with a modern platform built for Bangladesh.
+            </p>
+            <div className="glass-light rounded-2xl p-8">
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                {[
+                  { value: "128%", label: "Avg. Monthly Views", icon: "📈" },
+                  { value: "80%", label: "Response Rate", icon: "💬" },
+                  { value: "3x", label: "Faster to Fill", icon: "⚡" },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="glass-card rounded-xl p-5 text-center"
+                  >
+                    <p className="text-2xl mb-1">{stat.icon}</p>
+                    <p className="text-2xl font-bold text-emerald-400">
+                      {stat.value}
+                    </p>
+                    <p className="text-xs text-white/50 mt-1">{stat.label}</p>
                   </div>
-                  <h4 className="font-semibold text-white mb-1 text-sm">
-                    {item.title}
-                  </h4>
-                  <p className="text-white/50 text-xs">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/10">
-              <div>
-                <p className="text-white font-semibold">
-                  Ready to list your property?
-                </p>
-                <p className="text-white/40 text-sm">
-                  It's free and takes less than 5 minutes.
-                </p>
+                ))}
               </div>
-              <button
-                onClick={() => navigate("/add-property")}
-                className="px-6 py-3 bg-emerald-500/80 backdrop-blur text-white text-sm font-medium rounded-xl hover:bg-emerald-500 transition whitespace-nowrap"
-              >
-                Start Listing →
-              </button>
+
+              {/* How it works */}
+              <h3 className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-4">
+                How it works
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-3 mb-8">
+                {[
+                  {
+                    step: "01",
+                    title: "Post Your Property",
+                    desc: "Fill in the details, upload photos, and go live in minutes — completely free.",
+                    icon: "🏠",
+                  },
+                  {
+                    step: "02",
+                    title: "Get Direct Inquiries",
+                    desc: "Tenants call or WhatsApp you directly. No middlemen, no commission cuts.",
+                    icon: "📞",
+                  },
+                  {
+                    step: "03",
+                    title: "Manage with Ease",
+                    desc: "Track, edit and remove listings anytime from your dashboard.",
+                    icon: "📋",
+                  },
+                ].map((item) => (
+                  <div key={item.step} className="glass-card rounded-xl p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                        {item.step}
+                      </span>
+                      <span className="text-lg">{item.icon}</span>
+                    </div>
+                    <h4 className="font-semibold text-white mb-1 text-sm">
+                      {item.title}
+                    </h4>
+                    <p className="text-white/50 text-xs">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/10">
+                <div>
+                  <p className="text-white font-semibold">
+                    Ready to list your property?
+                  </p>
+                  <p className="text-white/40 text-sm">
+                    It's free and takes less than 5 minutes.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate("/add-property")}
+                  className="px-6 py-3 bg-emerald-500/80 backdrop-blur text-white text-sm font-medium rounded-xl hover:bg-emerald-500 transition whitespace-nowrap"
+                >
+                  Start Listing →
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Community Stats */}
       <div className="py-16 px-4">

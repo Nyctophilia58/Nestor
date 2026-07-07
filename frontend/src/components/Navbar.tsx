@@ -1,11 +1,17 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { useThemeStore } from "../store/themeStore";
 
 const Navbar = () => {
   const { user, logout } = useAuthStore();
   const { dark, toggle } = useThemeStore();
+  const location = useLocation();
   const navigate = useNavigate();
+
+  // Hide navbar on login and register pages
+  if (location.pathname === "/login" || location.pathname === "/register") {
+    return null;
+  }
 
   const handleLogout = () => {
     logout();
@@ -32,6 +38,14 @@ const Navbar = () => {
 
           {user ? (
             <>
+              {user?.role === "admin" && (
+                <Link
+                  to="/admin"
+                  className="hover:text-white transition text-xs text-purple-400"
+                >
+                  👑 Admin
+                </Link>
+              )}
               <Link
                 to="/favourites"
                 className="text-sm text-white/70 hover:text-white transition hidden md:block"

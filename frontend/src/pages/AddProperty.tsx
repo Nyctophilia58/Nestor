@@ -27,6 +27,11 @@ const AddProperty = () => {
     return <Navigate to="/login" replace />;
   }
 
+  if (!user || (user.role !== "landlord" && user.role !== "admin")) {
+    navigate("/");
+    return null;
+  }
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement

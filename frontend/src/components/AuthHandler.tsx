@@ -12,10 +12,12 @@ const AuthHandler = () => {
     const id = params.get("id");
 
     if (token && name && email && id) {
+      const role = params.get("role");
       const user = {
         id: Number(id),
         name: decodeURIComponent(name),
         email: decodeURIComponent(email),
+        role: (role || "tenant") as "tenant" | "landlord" | "admin",
       };
       setAuth(user, token);
       // Remove query params from URL without refreshing

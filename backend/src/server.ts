@@ -9,6 +9,7 @@ import uploadRoutes from "./routes/uploadRoutes";
 import ticketRoutes from "./routes/ticketRoutes";
 import path from "path";
 import cookieParser from "cookie-parser";
+import adminRoutes from "./routes/adminRoutes";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use(passport.initialize());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/properties", propertyRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));

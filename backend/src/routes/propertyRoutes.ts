@@ -10,7 +10,7 @@ import {
   addFavourite,
   removeFavourite,
 } from "../controllers/propertyController";
-import { protect } from "../middleware/auth";
+import { isLandlord, protect } from "../middleware/auth";
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.get("/favourites", protect, getFavourites);
 router.get("/:id", getProperty);
 
 // Protected routes (require authentication)
-router.post("/", protect, createProperty);
+router.post("/", protect, isLandlord, createProperty);
 router.put("/:id", protect, updateProperty);
 router.delete("/:id", protect, deleteProperty);
 router.post("/:id/favourite", protect, addFavourite);

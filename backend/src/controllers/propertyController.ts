@@ -199,10 +199,14 @@ export const deleteProperty = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
 
   try {
-    const result = await pool.query(
-      "DELETE FROM properties WHERE id = $1 AND user_id = $2 RETURNING *",
-      [id, req.userId],
-    );
+    // Admin can delete any property, owner can only delete their own
+    const query =
+      req.userRole === "admin"
+        ? "DELETE FROM properties WHERE id = $1 RETURNING *"
+        : "DELETE FROM properties WHERE id = $1 AND user_id = $2 RETURNING *";
+
+    const values = req.userRole === "admin" ? [id] : [id, req.userId];
+    const result = await pool.query(query, values);
 
     if (result.rows.length === 0) {
       return res
