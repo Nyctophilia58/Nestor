@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Listings from "./pages/Listings";
 import PropertyDetail from "./pages/PropertyDetail";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ResetPassword from "./pages/ResetPassword";
 import AddProperty from "./pages/AddProperty";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
@@ -59,7 +60,20 @@ function App() {
         }}
       />
       <AuthHandler />
-      <Navbar />
+      <MainLayout />
+    </BrowserRouter>
+  );
+}
+
+function MainLayout() {
+  const location = useLocation();
+  const hideNavbar = ["/login", "/register", "/reset-password"].includes(
+    location.pathname,
+  );
+
+  return (
+    <>
+      {!hideNavbar && <Navbar />}
       <Routes>
         <Route path="*" element={<NotFound />} />
         <Route path="/" element={<Home />} />
@@ -68,6 +82,7 @@ function App() {
         <Route path="/listings/:id" element={<PropertyDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/add-property" element={<AddProperty />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/favourites" element={<Favourites />} />
@@ -76,7 +91,7 @@ function App() {
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
 

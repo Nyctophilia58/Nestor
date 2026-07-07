@@ -136,6 +136,8 @@ router.post("/complete-google", async (req, res) => {
 router.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
 
+  console.log("[Forgot Password Request]", { email });
+
   // Always return the same response to prevent email enumeration
   const genericResponse = {
     message: "If that email exists, a reset link has been sent.",
@@ -159,8 +161,9 @@ router.post("/forgot-password", async (req, res) => {
       [email],
     );
     if (userResult.rows.length === 0) {
-      // Don't reveal that the email doesn't exist
-      return res.json(genericResponse);
+      return res.status(404).json({
+        message: "No account found with this email. Please register first.",
+      });
     }
 
     const token = crypto.randomBytes(32).toString("hex");

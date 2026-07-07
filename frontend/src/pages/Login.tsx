@@ -5,7 +5,7 @@ import { useAuthStore } from "../store/authStore";
 import api, { getErrorMessage } from "../lib/api";
 
 const Login = () => {
-  const [method, setMethod] = useState<"email" | null>(null);
+  const [method, setMethod] = useState<"email" | "forgot" | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -14,6 +14,11 @@ const Login = () => {
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  // Forgot password state
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
 
   // Read error from URL (e.g. ?error=google_auth_failed after failed Google login)
   useEffect(() => {
@@ -43,6 +48,26 @@ const Login = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setForgotLoading(true);
+    console.log("[Forgot Password] Submitting...", { email: forgotEmail });
+    try {
+      const response = await api.post("/auth/forgot-password", {
+        email: forgotEmail,
+      });
+      console.log("[Forgot Password] Success:", response.data);
+      setForgotSent(true);
+    } catch (err: unknown) {
+      console.error("[Forgot Password] Error:", err);
+      setError(getErrorMessage(err));
+    } finally {
+      console.log("[Forgot Password] Setting loading to false");
+      setForgotLoading(false);
+    }
+  };
+
   const handleGoogleLogin = () => {
     window.location.href = `${
       import.meta.env.VITE_API_URL || "http://localhost:5000/api"
@@ -55,13 +80,23 @@ const Login = () => {
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-white">
-            {method === "email" ? "Login With Email" : "Login To Your Account"}
+            {method === "forgot"
+              ? "Reset Password"
+              : method === "email"
+                ? "Login With Email"
+                : "Login To Your Account"}
           </h1>
           <p className="text-white/50 text-sm mt-1">
-            Welcome back to{" "}
-            <b>
-              <span className="text-emerald-400">Nestor</span>
-            </b>
+            {method === "forgot"
+              ? "We'll send you a reset link"
+              : method === "email"
+                ? "Enter your credentials"
+                : "Welcome back to "}
+            {method === null && (
+              <b>
+                <span className="text-emerald-400">Nestor</span>
+              </b>
+            )}
           </p>
         </div>
 
@@ -113,8 +148,67 @@ const Login = () => {
               Login with Email
             </button>
           </div>
+        ) : method === "forgot" ? (
+          /* Forgot Password Form */
+          <>
+            {forgotSent ? (
+              <div className="text-center py-4">
+                <div className="text-4xl mb-3">📧</div>
+                <p className="text-white/80 text-sm">
+                  If an account with <strong>{forgotEmail}</strong> exists, a
+                  password reset link has been sent. Please check your inbox.
+                </p>
+                <button
+                  onClick={() => {
+                    setMethod(null);
+                    setForgotSent(false);
+                    setForgotEmail("");
+                  }}
+                  className="mt-6 text-sm text-emerald-400 hover:underline"
+                >
+                  ← Back to login
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-white/70 mb-1">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                    className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={forgotLoading}
+                  className="w-full py-2.5 bg-emerald-500/80 backdrop-blur text-white text-sm font-medium rounded-lg hover:bg-emerald-500 transition disabled:opacity-50"
+                >
+                  {forgotLoading ? "Sending..." : "Send Reset Link"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMethod("email");
+                    setForgotSent(false);
+                    setForgotEmail("");
+                  }}
+                  className="w-full text-sm text-white/50 hover:text-white transition"
+                >
+                  ← Back to login
+                </button>
+              </form>
+            )}
+          </>
         ) : (
-          /* Email Form */
+          /* Email Login Form */
           <>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -143,6 +237,16 @@ const Login = () => {
                   required
                   className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
                 />
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setMethod("forgot")}
+                  className="text-xs text-emerald-400 hover:text-emerald-300 transition"
+                >
+                  Forgot Password?
+                </button>
               </div>
 
               <button
