@@ -31,7 +31,7 @@ const Navbar = () => {
           {/* Theme Toggle */}
           <button
             onClick={toggle}
-            className="w-9 h-9 flex items-center justify-center rounded-lg glass hover:glass-light transition text-lg"
+            className="w-7 h-7 flex items-center justify-center rounded-lg glass hover:glass-light transition text-lg"
           >
             {dark ? "☀️" : "🌙"}
           </button>
