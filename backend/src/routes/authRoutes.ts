@@ -77,9 +77,11 @@ router.get(
     }
 
     // Login mode: log the user in normally
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET!,
+      { expiresIn: "7d" },
+    );
 
     const params = new URLSearchParams({
       token,

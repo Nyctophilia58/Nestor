@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
 import toast from "react-hot-toast";
@@ -115,9 +115,14 @@ const AdminPanel = () => {
             Manage users and support tickets
           </p>
         </div>
-        <span className="text-xs font-semibold text-purple-400 bg-purple-500/10 border border-purple-400/30 px-3 py-1 rounded-full">
-          👑 Admin
-        </span>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/admin/tickets"
+            className="px-4 py-2 glass text-white/70 hover:text-white text-sm rounded-xl hover:glass-light transition"
+          >
+            🎫 All Tickets
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}

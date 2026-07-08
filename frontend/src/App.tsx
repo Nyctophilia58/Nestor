@@ -22,6 +22,7 @@ import About from "./pages/About";
 import TermsOfService from "./pages/TermsOfService";
 import HelpCenter from "./pages/HelpCenter";
 import AdminPanel from "./pages/AdminPanel";
+import AdminTickets from "./pages/AdminTickets";
 
 function App() {
   const { user } = useAuthStore();
@@ -78,6 +79,7 @@ function MainLayout() {
         <Route path="*" element={<NotFound />} />
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/tickets" element={<AdminTickets />} />
         <Route path="/listings" element={<Listings />} />
         <Route path="/listings/:id" element={<PropertyDetail />} />
         <Route path="/login" element={<Login />} />
