@@ -69,13 +69,23 @@ export default function Footer() {
             </h3>
             <div className="flex gap-3 mb-6">
               {[
-                { label: "f", href: "https://facebook.com" },
-                { label: "ig", href: "https://instagram.com" },
-                { label: "in", href: "https://linkedin.com" },
-                { label: "▶", href: "https://youtube.com" },
+                {
+                  label: <i className="fa fa-facebook"></i>,
+                  href:
+                    import.meta.env.VITE_FACEBOOK_URL || "https://facebook.com",
+                },
+                {
+                  label: <i className="fa fa-linkedin"></i>,
+                  href:
+                    import.meta.env.VITE_LINKEDIN_URL || "https://linkedin.com",
+                },
+                {
+                  label: <i className="fa fa-github"></i>,
+                  href: import.meta.env.VITE_GITHUB_URL || "https://github.com",
+                },
               ].map((s) => (
                 <a
-                  key={s.label}
+                  key={s.href}
                   href={s.href}
                   target="_blank"
                   rel="noreferrer"
