@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import "./config/db";
+import pool from "./config/db";
 import passport from "./config/passport";
 import authRoutes from "./routes/authRoutes";
 import propertyRoutes from "./routes/propertyRoutes";
@@ -12,6 +12,39 @@ import cookieParser from "cookie-parser";
 import adminRoutes from "./routes/adminRoutes";
 
 dotenv.config();
+
+// Ensure database constraints exist to prevent duplicate accounts
+async function ensureConstraints() {
+  try {
+    // Add UNIQUE constraint on email if not exists
+    await pool.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'users_email_unique') THEN
+          ALTER TABLE users ADD CONSTRAINT users_email_unique UNIQUE (email);
+        END IF;
+      EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Constraint users_email_unique already exists or other error';
+      END $$;
+    `);
+
+    // Add UNIQUE constraint on google_id if not exists
+    await pool.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'users_google_id_unique') THEN
+          ALTER TABLE users ADD CONSTRAINT users_google_id_unique UNIQUE (google_id);
+        END IF;
+      EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Constraint users_google_id_unique already exists or other error';
+      END $$;
+    `);
+
+    console.log("✅ Database constraints verified");
+  } catch (err) {
+    console.error("Failed to add constraints:", err);
+  }
+}
+
+void ensureConstraints();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;

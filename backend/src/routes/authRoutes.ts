@@ -68,7 +68,15 @@ router.get(
       return res.redirect(`${frontendUrl}/register?${params.toString()}`);
     }
 
-    // Existing user — generate JWT
+    // Existing user — generate JWT and check mode
+    if (mode === "register") {
+      // User already has an account, redirect to register with error
+      return res.redirect(
+        `${frontendUrl}/register?error=existing_account&email=${user.email}`,
+      );
+    }
+
+    // Login mode: log the user in normally
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
       expiresIn: "7d",
     });
@@ -81,8 +89,7 @@ router.get(
       role: user.role || "tenant",
     });
 
-    const redirectPath = mode === "register" ? "/register" : "/";
-    res.redirect(`${frontendUrl}${redirectPath}?${params.toString()}`);
+    res.redirect(`${frontendUrl}/?${params.toString()}`);
   },
 );
 

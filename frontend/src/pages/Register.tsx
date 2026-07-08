@@ -28,8 +28,20 @@ function getInitialGoogleData(): GoogleData | null {
   return null;
 }
 
+/** Parse warning from URL params during initial render */
+function getInitialWarning(): string {
+  const params = new URLSearchParams(window.location.search);
+  const err = params.get("error");
+  if (err === "existing_account") {
+    window.history.replaceState({}, "", "/register");
+    return "You already have an account with this email. Please log in instead.";
+  }
+  return "";
+}
+
 const Register = () => {
   // Capture Google OAuth data from URL once, no setState inside effects
+  // Capture Google OAuth data from URL params during initial render
   const [googleData] = useState<GoogleData | null>(getInitialGoogleData);
 
   const [method, setMethod] = useState<"email" | null>(
@@ -44,12 +56,20 @@ const Register = () => {
     role: "",
   });
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState(getInitialWarning);
   const [loading, setLoading] = useState(false);
 
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
 
   const fromOAuth = !!googleData;
+
+  // Auto-dismiss warning after 6 seconds when first shown
+  useEffect(() => {
+    if (!warning) return;
+    const timer = setTimeout(() => setWarning(""), 6000);
+    return () => clearTimeout(timer);
+  }, [warning]);
 
   // Clean up OAuth params from the URL after capturing them
   useEffect(() => {
@@ -65,6 +85,7 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setWarning("");
 
     // Complete Google registration: create the user with phone + role
     if (fromOAuth && googleData) {
@@ -132,7 +153,30 @@ const Register = () => {
           </p>
         </div>
 
-        {/* Error */}
+        {/* Warning */}
+        {warning && (
+          <div className="mb-4 p-3 bg-amber-500/15 border border-amber-400/30 text-amber-200 text-sm rounded-lg flex items-start gap-2">
+            <svg
+              className="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v2m0 8h.01M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            <span>{warning}</span>
+          </div>
+        )}
         {error && (
           <div className="mb-4 p-3 bg-red-500/15 border border-red-400/30 text-red-300 text-sm rounded-lg">
             {error}
@@ -174,7 +218,19 @@ const Register = () => {
             </div>
 
             <button
-              onClick={() => setMethod("email")}
+              onClick={() => {
+                setMethod("email");
+                setWarning("");
+                setError("");
+                setForm({
+                  name: "",
+                  email: "",
+                  phone: "",
+                  password: "",
+                  confirmPassword: "",
+                  role: "",
+                });
+              }}
               className="w-full py-3 bg-emerald-500/80 hover:bg-emerald-500 text-white rounded-lg transition font-medium backdrop-blur"
             >
               Register with Email
@@ -409,7 +465,19 @@ const Register = () => {
             </form>
 
             <button
-              onClick={() => setMethod(null)}
+              onClick={() => {
+                setMethod(null);
+                setWarning("");
+                setError("");
+                setForm({
+                  name: "",
+                  email: "",
+                  phone: "",
+                  password: "",
+                  confirmPassword: "",
+                  role: "",
+                });
+              }}
               className="w-full mt-4 text-sm text-white/50 hover:text-white transition"
             >
               ← Back to options

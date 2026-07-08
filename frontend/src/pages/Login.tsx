@@ -15,6 +15,13 @@ const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  // Auto-dismiss error after 6 seconds
+  useEffect(() => {
+    if (!error) return;
+    const timer = setTimeout(() => setError(""), 6000);
+    return () => clearTimeout(timer);
+  }, [error]);
+
   // Forgot password state
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
@@ -142,7 +149,12 @@ const Login = () => {
             </div>
 
             <button
-              onClick={() => setMethod("email")}
+              onClick={() => {
+                setMethod("email");
+                setError("");
+                setForgotSent(false);
+                setForgotEmail("");
+              }}
               className="w-full py-3 bg-emerald-500/80 hover:bg-emerald-500 text-white rounded-lg transition font-medium backdrop-blur"
             >
               Login with Email
@@ -163,6 +175,7 @@ const Login = () => {
                     setMethod(null);
                     setForgotSent(false);
                     setForgotEmail("");
+                    setError("");
                   }}
                   className="mt-6 text-sm text-emerald-400 hover:underline"
                 >
@@ -199,6 +212,7 @@ const Login = () => {
                     setMethod("email");
                     setForgotSent(false);
                     setForgotEmail("");
+                    setError("");
                   }}
                   className="w-full text-sm text-white/50 hover:text-white transition"
                 >
@@ -242,7 +256,11 @@ const Login = () => {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={() => setMethod("forgot")}
+                  onClick={() => {
+                    setMethod("forgot");
+                    setError("");
+                    setPassword("");
+                  }}
                   className="text-xs text-emerald-400 hover:text-emerald-300 transition"
                 >
                   Forgot Password?
@@ -259,7 +277,12 @@ const Login = () => {
             </form>
 
             <button
-              onClick={() => setMethod(null)}
+              onClick={() => {
+                setMethod(null);
+                setError("");
+                setEmail("");
+                setPassword("");
+              }}
               className="w-full mt-4 text-sm text-white/50 hover:text-white transition"
             >
               ← Back to options
