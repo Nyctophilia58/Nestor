@@ -1,5 +1,4 @@
 import axios, { type AxiosError } from "axios";
-import toast from "react-hot-toast";
 
 interface ApiErrorResponse {
   message: string;
