@@ -27,26 +27,32 @@ import Profile from "./pages/Profile";
 import HelpCenter from "./pages/HelpCenter";
 
 function App() {
-  const { user } = useAuthStore();
+  const { user, token } = useAuthStore();
   const { set } = useFavouriteStore();
   const { dark } = useThemeStore();
 
-  // Check if account still exists when user comes back to the tab
+  // Check if account still exists + refresh role when tab regains focus
   useEffect(() => {
-    if (!user) return
+    if (!user || !token) return
 
-    const handleFocus = async () => {
-      console.log('tab focused - checking account...');
+    const syncUser = async () => {
       try {
-        await api.get('/auth/me');
+        const res = await api.get('/auth/me');
+        const freshUser = res.data;
+        useAuthStore.getState().setAuth(freshUser, token);
       } catch {
-        // interceptor handles ACCOUNT_DELETED automatically
+        // interceptor handles ACCOUNT_DELETED
       }
     }
 
-    window.addEventListener('focus', handleFocus)
-    return () => window.removeEventListener('focus', handleFocus)
-  }, [user]);
+    // Sync on mount (handles role changes made while app was closed)
+    syncUser();
+
+    // Re-sync whenever the tab regains focus
+    const handleFocus = () => syncUser();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user, token]);
 
   useEffect(() => {
     if (dark) {
