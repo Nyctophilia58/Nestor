@@ -1,4 +1,10 @@
 import axios, { type AxiosError } from "axios";
+import toast from "react-hot-toast";
+
+interface ApiErrorResponse {
+  message: string;
+  code?: string;
+}
 
 // Extend AxiosError so TypeScript knows about friendlyMessage
 declare module "axios" {
@@ -23,9 +29,13 @@ api.interceptors.request.use((config) => {
 // Transform network errors into a consistent format
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
-    if (!error.response) {
-      // Network error (no response from server)
+  (error: AxiosError<ApiErrorResponse>) => {
+    if (error.response?.data?.code === "ACCOUNT_DELETED") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      window.location.href = "/login?reason=account_deleted";
+    } else if (!error.response) {
       error.friendlyMessage =
         "Network error. Please check your connection and try again.";
     } else if (error.response.status >= 500) {

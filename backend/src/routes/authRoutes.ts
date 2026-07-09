@@ -7,6 +7,9 @@ import { googleConfigured } from "../config/passport";
 import pool from "../config/db";
 import { register, login } from "../controllers/authController";
 import { sendPasswordResetEmail } from "../utils/mail";
+import { protect, AuthRequest } from "../middleware/auth";
+import { Response as ExpressResponse } from "express";
+
 
 const router = Router();
 
@@ -137,6 +140,19 @@ router.post("/complete-google", async (req, res) => {
     res.status(201).json({ user: newUser, token });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
+  }
+});
+
+// Get current user
+router.get('/me', protect, async (req: AuthRequest, res: ExpressResponse) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, name, email, phone, avatar, role FROM users WHERE id = $1',
+      [req.userId]
+    )
+    res.json(result.rows[0])
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
   }
 });
 

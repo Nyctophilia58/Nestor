@@ -29,6 +29,23 @@ function App() {
   const { set } = useFavouriteStore();
   const { dark } = useThemeStore();
 
+  // Check if account still exists when user comes back to the tab
+  useEffect(() => {
+    if (!user) return
+
+    const handleFocus = async () => {
+      console.log('tab focused - checking account...');
+      try {
+        await api.get('/auth/me');
+      } catch {
+        // interceptor handles ACCOUNT_DELETED automatically
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [user]);
+
   useEffect(() => {
     if (dark) {
       document.documentElement.classList.add("dark");

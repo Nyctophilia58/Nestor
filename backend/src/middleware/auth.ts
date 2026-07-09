@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import pool from "../config/db";
 
 export interface AuthRequest extends Request {
   userId?: number;
   userRole?: string;
 }
 
-export const protect = (
+export const protect = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction,
@@ -22,8 +23,17 @@ export const protect = (
       id: number;
       role: string;
     };
+
+    const result = await pool.query("SELECT id, role FROM users WHERE id = $1", [
+      decoded.id,
+    ]);
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ message: "Account no longer exists", code: "ACCOUNT_DELETED"});
+    }
+
     req.userId = decoded.id;
-    req.userRole = decoded.role;
+    req.userRole = result.rows[0].role;
     next();
   } catch (err) {
     res.status(401).json({ message: "Invalid token" });

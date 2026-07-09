@@ -14,6 +14,17 @@ const Login = () => {
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const reason = searchParams.get("reason");
+
+  // Clear the URL param after 5 seconds
+  useEffect(() => {
+    if (reason === 'account_deleted') {
+      const timer = setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [reason]);
 
   // Auto-dismiss error after 6 seconds
   useEffect(() => {
@@ -84,6 +95,18 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="glass-light rounded-2xl w-full max-w-md p-8 shadow-2xl">
+
+        {/* Account deleted banner */}
+        {reason === 'account_deleted' && (
+          <div className="mb-6 p-4 bg-red-500/15 border border-red-400/30 rounded-xl text-center">
+            <p className="text-2xl mb-2">⚠️</p>
+            <p className="text-red-300 font-medium text-sm">Account no longer exists</p>
+            <p className="text-red-300/60 text-xs mt-1">
+              This account has been removed. Contact support if you think this is a mistake.
+            </p>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-white">
