@@ -147,7 +147,7 @@ router.post("/complete-google", async (req, res) => {
 router.get('/me', protect, async (req: AuthRequest, res: ExpressResponse) => {
   try {
     const result = await pool.query(
-      'SELECT id, name, email, phone, avatar, role FROM users WHERE id = $1',
+      'SELECT id, name, email, phone, avatar, bio, role FROM users WHERE id = $1',
       [req.userId]
     )
     res.json(result.rows[0])
@@ -155,6 +155,106 @@ router.get('/me', protect, async (req: AuthRequest, res: ExpressResponse) => {
     res.status(500).json({ message: 'Server error' })
   }
 });
+
+// Update user profile
+router.put('/profile', protect, async (req: AuthRequest, res: ExpressResponse) => {
+  const { name, phone, bio, avatar } = req.body
+  const updates: string[] = []
+  const values: any[] = []
+  let idx = 1
+  if (name !== undefined) { updates.push(`name = $${idx++}`); values.push(name) }
+  if (phone !== undefined) { updates.push(`phone = $${idx++}`); values.push(phone) }
+  if (bio !== undefined) { updates.push(`bio = $${idx++}`); values.push(bio) }
+  if (avatar !== undefined && avatar !== '') { updates.push(`avatar = $${idx++}`); values.push(avatar) }
+  if (updates.length === 0) {
+    return res.json({ message: 'Nothing to update' })
+  }
+  values.push(req.userId)
+  try {
+    const result = await pool.query(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, name, email, phone, avatar, bio, role`,
+      values
+    )
+    res.json(result.rows[0])
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// update bio
+router.put('/bio', protect, async (req: AuthRequest, res: ExpressResponse) => {
+  const { bio } = req.body
+  if (!bio || bio === '') {
+    return res.status(400).json({ message: 'Bio cannot be empty' })
+  }
+  try {
+    const result = await pool.query(
+      'UPDATE users SET bio = $1 WHERE id = $2 RETURNING id, name, email, phone, avatar, bio, role',
+      [bio, req.userId]
+    )
+    res.json(result.rows[0])
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// Update role (admin users are forbidden from changing role)
+router.patch('/role', protect, async (req: AuthRequest, res: ExpressResponse) => {
+const { role: newRole } = req.body
+if (!newRole || !['tenant', 'landlord'].includes(newRole)) {
+  return res.status(400).json({ message: 'Invalid role' })
+}
+try {
+  // Fetch current user role
+  const userResult = await pool.query('SELECT role FROM users WHERE id = $1', [req.userId])
+  if (userResult.rows.length === 0) {
+    return res.status(404).json({ message: 'User not found' })
+  }
+  if (userResult.rows[0].role === 'admin') {
+    return res.status(403).json({ message: 'Admins cannot change their role' })
+  }
+  const result = await pool.query(
+    'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, name, email, phone, avatar, role',
+    [newRole, req.userId]
+  )
+  res.json(result.rows[0])
+} catch (err) {
+  res.status(500).json({ message: 'Server error' })
+}
+})
+
+// Change password
+router.put('/change-password', protect, async (req: AuthRequest, res: ExpressResponse) => {
+  const { currentPassword, newPassword } = req.body
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Current password and new password are required' })
+  }
+  try {
+    const result = await pool.query('SELECT password FROM users WHERE id = $1', [req.userId])
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+    const isMatch = await bcryptjs.compare(currentPassword, result.rows[0].password)
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' })
+    }
+    const hashedPassword = await bcryptjs.hash(newPassword, 10)
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, req.userId])
+    res.json({ message: 'Password updated successfully' })
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// Delete account
+router.delete('/me', protect, async (req: AuthRequest, res: ExpressResponse) => {
+  try {
+    await pool.query('DELETE FROM users WHERE id = $1', [req.userId])
+    res.json({ message: 'Account deleted', code: 'ACCOUNT_DELETED' })
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
 
 // ─── Gate Forgot Password ───
 

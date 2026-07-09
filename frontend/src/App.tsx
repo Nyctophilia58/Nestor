@@ -20,9 +20,11 @@ import AuthHandler from "./components/AuthHandler";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import About from "./pages/About";
 import TermsOfService from "./pages/TermsOfService";
-import HelpCenter from "./pages/HelpCenter";
+import Settings from "./pages/Settings";
 import AdminPanel from "./pages/AdminPanel";
 import AdminTickets from "./pages/AdminTickets";
+import Profile from "./pages/Profile";
+import HelpCenter from "./pages/HelpCenter";
 
 function App() {
   const { user } = useAuthStore();
@@ -106,6 +108,8 @@ function MainLayout() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/favourites" element={<Favourites />} />
         <Route path="/about" element={<About />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />

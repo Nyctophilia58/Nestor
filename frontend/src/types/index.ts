@@ -3,8 +3,9 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
-  avatar?: string;
-  role: "tenant" | "landlord" | "admin";
+	role: "tenant" | "landlord" | "admin";
+	avatar?: string;
+	bio?: string;
 }
 
 export interface Property {

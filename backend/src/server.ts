@@ -38,6 +38,11 @@ async function ensureConstraints() {
       END $$;
     `);
 
+    // Ensure bio column exists on users table
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT
+    `);
+
     console.log("✅ Database constraints verified");
   } catch (err) {
     console.error("Failed to add constraints:", err);
