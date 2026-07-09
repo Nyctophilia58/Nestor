@@ -54,6 +54,7 @@ const getPasswordStrength = (password: string) => {
 const isValidPhone = (phone: string) =>
   /^(?:\+?88)?01[3-9]\d{8}$/.test(phone)
 
+
 const Register = () => {
   // Capture Google OAuth data from URL once, no setState inside effects
   // Capture Google OAuth data from URL params during initial render
@@ -85,6 +86,13 @@ const Register = () => {
     const timer = setTimeout(() => setWarning(""), 6000);
     return () => clearTimeout(timer);
   }, [warning]);
+
+  // Auto-dismiss error after 5 seconds
+  useEffect(() => {
+    if (!error) return
+    const timer = setTimeout(() => setError(''), 5000)
+    return () => clearTimeout(timer)
+  }, [error]);
 
   // Clean up OAuth params from the URL after capturing them
   useEffect(() => {
