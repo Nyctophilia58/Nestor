@@ -3,18 +3,69 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import pool from "../config/db";
 
+// Validators
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+const isValidPhone = (phone: string): boolean => {
+  const phoneRegex = /^(?:\+?88)?01[3-9]\d{8}$/;
+  return phoneRegex.test(phone);
+};
+
+const isValidPassword = (password: string) => {
+  const rules = {
+    minLength: password.length >= 8,
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /\d/.test(password),
+    hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  }
+  return rules;
+};
+
 export const register = async (req: Request, res: Response) => {
   const { name, email, password, phone, role } = req.body;
 
   // check if user already exists
   try {
+    // Email format check
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    };
+
     const existingUser = await pool.query(
       "SELECT * FROM users WHERE email = $1",
       [email],
     );
+
     if (existingUser.rows.length > 0) {
       return res.status(400).json({ message: "Email is already in use" });
     }
+
+    // Phone validation
+    if (!phone || !isValidPhone(phone)) {
+      return res.status(400).json({ message: "Invalid phone format" });
+    };
+
+    // Password validation
+    const passwordRules = isValidPassword(password);
+    if (!passwordRules.minLength) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long" });
+    };
+    if (!passwordRules.hasUppercase) {
+      return res.status(400).json({ message: "Password must contain at least one uppercase letter" });
+    };
+    if (!passwordRules.hasLowercase) {
+      return res.status(400).json({ message: "Password must contain at least one lowercase letter" });
+    };
+    if (!passwordRules.hasNumber) {
+      return res.status(400).json({ message: "Password must contain at least one number" });
+    };
+    if (!passwordRules.hasSpecial) {
+      return res.status(400).json({ message: "Password must contain at least one special character (!@#$%^&*)" });
+    };
 
     // hash password
     const hashedPassword = await bcrypt.hash(password, 10);

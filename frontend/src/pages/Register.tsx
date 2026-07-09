@@ -39,6 +39,21 @@ function getInitialWarning(): string {
   return "";
 }
 
+const getPasswordStrength = (password: string) => {
+  const rules = [
+    { label: '8+ characters', met: password.length >= 8 },
+    { label: 'Uppercase letter', met: /[A-Z]/.test(password) },
+    { label: 'Lowercase letter', met: /[a-z]/.test(password) },
+    { label: 'Number', met: /\d/.test(password) },
+    { label: 'Special character', met: /[!@#$%^&*(),.?":{}|<>]/.test(password) },
+  ]
+  const score = rules.filter(r => r.met).length
+  return { rules, score }
+}
+
+const isValidPhone = (phone: string) =>
+  /^(?:\+?88)?01[3-9]\d{8}$/.test(phone)
+
 const Register = () => {
   // Capture Google OAuth data from URL once, no setState inside effects
   // Capture Google OAuth data from URL params during initial render
@@ -279,8 +294,18 @@ const Register = () => {
                 onChange={handleChange}
                 placeholder="01700000000"
                 required
-                className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                  form.phone && !isValidPhone(form.phone)
+                    ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                    : 'focus:ring-emerald-400/50'
+                }`}
               />
+              {form.phone && !isValidPhone(form.phone) && (
+                <p className="text-red-400 text-xs mt-1">Enter a valid number (e.g. 01712345678 or +8801712345678)</p>
+              )}
+              {form.phone && isValidPhone(form.phone) && (
+                <p className="text-green-400 text-xs mt-1">Valid phone number</p>
+              )}
             </div>
 
             {/* Role selection */}
@@ -363,8 +388,15 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="you@example.com"
                   required
-                  className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                  className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                  form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
+                    ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                    : 'focus:ring-emerald-400/50'
+                  }`}
                 />
+                {form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && (
+                  <p className="text-red-400 text-xs mt-1">Enter a valid email address</p>
+                )}
               </div>
 
               <div>
@@ -378,8 +410,21 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="01700000000"
                   required
-                  className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                  className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                    form.phone && !isValidPhone(form.phone)
+                      ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                      : 'focus:ring-emerald-400/50'
+                  }`}
                 />
+
+                {form.phone && !isValidPhone(form.phone) && (
+                  <p className="text-red-400 text-xs mt-1">
+                    Enter a valid number (e.g. 01712345678 or +8801712345678)
+                  </p>
+                )}
+                {form.phone && isValidPhone(form.phone) && (
+                  <p className="text-emerald-400 text-xs mt-1">✓ Valid phone number</p>
+                )}
               </div>
 
               <div>
@@ -438,6 +483,49 @@ const Register = () => {
                   required
                   className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
                 />
+                {/* Password strength */}
+                {form.password && (() => {
+                  const { rules, score } = getPasswordStrength(form.password)
+                  const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'][score]
+                  const strengthColor = ['', 'bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-emerald-500', 'bg-emerald-400'][score]
+
+                  return (
+                    <div className="mt-2 space-y-2">
+                      {/* Strength bar */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 flex gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <div
+                              key={i}
+                              className={`h-1 flex-1 rounded-full transition-all ${
+                                i < score ? strengthColor : 'bg-white/10'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className={`text-xs font-medium ${
+                          score <= 1 ? 'text-red-400' :
+                          score === 2 ? 'text-orange-400' :
+                          score === 3 ? 'text-yellow-400' :
+                          'text-emerald-400'
+                        }`}>
+                          {strengthLabel}
+                        </span>
+                      </div>
+
+                      {/* Rules checklist */}
+                      <div className="grid grid-cols-2 gap-1">
+                        {rules.map((rule) => (
+                          <p key={rule.label} className={`text-xs flex items-center gap-1 ${
+                            rule.met ? 'text-emerald-400' : 'text-white/30'
+                          }`}>
+                            {rule.met ? '✓' : '○'} {rule.label}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
 
               <div>
