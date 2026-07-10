@@ -29,12 +29,14 @@ const Settings = () => {
   const [name, setName] = useState(user?.name || "")
   const [phone, setPhone] = useState(user?.phone || "")
   const [savingInfo, setSavingInfo] = useState(false)
+  const [submittedInfo, setSubmittedInfo] = useState(false)
 
   // Password
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false)
+  const [submittedPassword, setSubmittedPassword] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -54,6 +56,7 @@ const Settings = () => {
   // Save personal info
   const handleSaveInfo = async (e: FormEvent) => {
     e.preventDefault()
+    setSubmittedInfo(true)
     if (phone && !isValidBDPhone(phone)) {
       toast.error('Enter a valid Bangladeshi phone number')
       return
@@ -88,6 +91,7 @@ const Settings = () => {
   // Change password
   const handlePasswordChange = async (e: FormEvent) => {
     e.preventDefault();
+    setSubmittedPassword(true);
     if (newPassword !== confirmPassword) {
       toast.error("New passwords do not match");
       return;
@@ -162,8 +166,15 @@ const Settings = () => {
               onChange={(e) => setName(e.target.value)}
               placeholder="John Doe"
               required
-              className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+              className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                submittedInfo && !name
+                  ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                  : 'focus:ring-emerald-400/50'
+              }`}
             />
+            {submittedInfo && !name && (
+              <p className="text-red-400 text-xs mt-1">Name is required</p>
+            )}
           </div>
 
           {/* Email — read only */}
@@ -301,7 +312,11 @@ const Settings = () => {
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                className={`w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                  submittedPassword && !currentPassword
+                    ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                    : 'focus:ring-emerald-400/50'
+                }`}
               />
               <button
                 type="button"
@@ -333,7 +348,11 @@ const Settings = () => {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                className={`w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                  submittedPassword && !newPassword || (newPassword && getPasswordStrength(newPassword).score < 5)
+                    ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                    : 'focus:ring-emerald-400/50'
+                }`}
               />
               <button
                 type="button"

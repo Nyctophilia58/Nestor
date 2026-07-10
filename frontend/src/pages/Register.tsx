@@ -76,6 +76,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
@@ -111,6 +112,7 @@ const Register = () => {
     e.preventDefault();
     setError("");
     setWarning("");
+    setSubmitted(true);
 
     // Complete Google registration: create the user with phone + role
     if (fromOAuth && googleData) {
@@ -383,7 +385,11 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="John Doe"
                   required
-                  className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                  className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                    submitted && !form.name
+                      ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                      : 'focus:ring-emerald-400/50'
+                  }`}
                 />
               </div>
 
@@ -492,7 +498,13 @@ const Register = () => {
                     onChange={handleChange}
                     placeholder="••••••••"
                     required
-                    className="w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                    className={`w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                      submitted && !form.password
+                        ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                        : form.password && getPasswordStrength(form.password).score < 5
+                          ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                          : 'focus:ring-emerald-400/50'
+                    }`}
                   />
                   <button
                     type="button"
@@ -571,7 +583,11 @@ const Register = () => {
                     onChange={handleChange}
                     placeholder="••••••••"
                     required
-                    className="w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                    className={`w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                      submitted && !form.confirmPassword || (form.confirmPassword && form.confirmPassword !== form.password)
+                        ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                        : 'focus:ring-emerald-400/50'
+                    }`}
                   />
                   <button
                     type="button"
@@ -593,6 +609,9 @@ const Register = () => {
                     )}
                   </button>
                 </div>
+                {form.confirmPassword && form.confirmPassword !== form.password && (
+                  <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
+                )}
               </div>
 
               <button

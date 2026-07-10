@@ -11,6 +11,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
@@ -53,6 +54,13 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSubmitted(true);
+
+    // Highlight password red if empty on submit
+    if (!email && !password) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -259,7 +267,13 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                  className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                    (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || (submitted && !email)
+                      ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                      : error
+                        ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                        : 'focus:ring-emerald-400/50'
+                  }`}
                 />
               </div>
 
@@ -274,7 +288,11 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                    className={`w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                      (submitted && !password) || error
+                        ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                        : 'focus:ring-emerald-400/50'
+                    }`}
                   />
                   <button
                     type="button"

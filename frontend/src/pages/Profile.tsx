@@ -11,6 +11,7 @@ const Profile = () => {
   const [name, setName] = useState(user?.name ?? "");
   const [bio, setBio] = useState(user?.bio ?? "");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar ?? "");
+  const [submitted, setSubmitted] = useState(false);
 
   const MAX_CHARS = 200;
 
@@ -28,6 +29,7 @@ const Profile = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setSubmitted(true);
     try {
       const res = await api.put("/auth/profile", { name, bio, avatar: avatarUrl });
       setAuth(res.data, token ?? "");
@@ -75,8 +77,13 @@ const Profile = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg glass text-white placeholder-white/30"
+              className={`w-full px-3 py-2 rounded-lg glass text-white placeholder-white/30 ${
+                submitted && !name ? 'ring-1 ring-red-400/50 focus:ring-red-400/50' : 'focus:ring-2 focus:ring-emerald-400/50'
+              }`}
             />
+            {submitted && !name && (
+              <p className="text-red-400 text-xs mt-1">Name is required</p>
+            )}
           </div>
 
           {/* Bio */}
