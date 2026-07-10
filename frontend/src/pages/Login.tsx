@@ -48,6 +48,16 @@ const Login = () => {
       setError(
         "No account found with this Google account. Please register first.",
       );
+    } else if (err === "email_exists") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setError(
+        "An account with this email already exists. Please log in instead.",
+      );
+    } else if (err) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setError(
+        `Registration error: ${decodeURIComponent(err)}`,
+      );
     }
   }, [searchParams]);
 
