@@ -102,9 +102,9 @@ const Navbar = () => {
       {menuOpen && (
         <div className='fixed inset-0 z-40 flex flex-col' onClick={closeMenu}>
           <div className='absolute inset-0 bg-black/50 backdrop-blur-sm'/>
-          <div className='absolute top-[65px] right-4 w-72 glass-light rounded-2xl border border-white/10 p-3 shadow-2xl space-y-1' onClick={() => { navigate('/profile'); closeMenu(); }}>
+          <div className='absolute top-[65px] right-4 w-72 glass-light rounded-2xl border border-white/10 p-3 shadow-2xl space-y-1'>
               {/* User Info */}
-              <div className='flex items-center gap-3 p-3 mb-2 glass rounded-xl'>
+              <div className='flex items-center gap-3 p-3 mb-2 glass rounded-xl' onClick={() => { navigate('/profile'); closeMenu(); }}>
                 {user!.avatar ? (
                   <img src={user!.avatar} alt="avatar" className='w-10 h-10 rounded-full object-cover' />
                 ) : (
