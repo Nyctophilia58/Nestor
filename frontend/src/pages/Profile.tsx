@@ -12,6 +12,8 @@ const Profile = () => {
   const [bio, setBio] = useState(user?.bio ?? "");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar ?? "");
 
+  const MAX_CHARS = 200;
+
   if (!user) return <Navigate to="/login" replace />;
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -78,15 +80,18 @@ const Profile = () => {
           </div>
 
           {/* Bio */}
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-1">Bio / Introduction</label>
-            <textarea
-              rows={4}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg glass text-white placeholder-white/30"
-            />
-          </div>
+          <textarea
+            rows={4}
+            value={bio}
+            maxLength={MAX_CHARS}
+            onChange={(e) => setBio(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg glass text-white placeholder-white/30 resize-none overflow-y-auto overflow-x-hidden break-words"
+            style={{ overflowWrap: "anywhere", whiteSpace: "pre-wrap" }}
+          />
+
+          <p className="mt-1 text-xs text-white/50">
+            {bio.length}/{MAX_CHARS} characters
+          </p>
 
           <div className="flex gap-4">
             <button type="submit" className="px-4 py-2 bg-emerald-500/80 text-white rounded-lg hover:bg-emerald-500 transition">
@@ -122,7 +127,7 @@ const Profile = () => {
             </div>
           </div>
           {user.bio && (
-            <p className="text-white/80 whitespace-pre-line">{user.bio}</p>
+            <p className="text-white/80 whitespace-pre-line break-words">{user.bio}</p>
           )}
           <button onClick={() => setEditMode(true)} className="px-4 py-2 bg-emerald-500/80 text-white rounded-lg hover:bg-emerald-500 transition">
             Edit Profile

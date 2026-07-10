@@ -8,8 +8,17 @@ interface AuthStore {
   logout: () => void;
 }
 
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem("user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export const useAuthStore = create<AuthStore>((set) => ({
-  user: JSON.parse(localStorage.getItem("user") || "null"),
+  user: loadFromStorage(),
   token: localStorage.getItem("token"),
 
   setAuth: (user, token) => {
