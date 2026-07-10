@@ -18,6 +18,15 @@ const PropertyDetail = () => {
   const [deleting, setDeleting] = useState(false);
   const [fetchError, setFetchError] = useState("");
 
+  // Normalize Bangladeshi phone numbers to international format for WhatsApp
+  const normalizePhone = (phone: string) => {
+    const cleaned = phone.replace(/[^\d+]/g, "");
+    if (cleaned.startsWith("+880")) return cleaned.slice(1);
+    if (cleaned.startsWith("880")) return cleaned;
+    if (cleaned.startsWith("01")) return "880" + cleaned.slice(1);
+    return cleaned;
+  };
+
   useEffect(() => {
     const fetchProperty = async () => {
       try {
@@ -203,7 +212,7 @@ const PropertyDetail = () => {
             {/* WhatsApp Button */}
             {property.owner_phone && (
               <a
-                href={`https://wa.me/${property.owner_phone}`}
+                href={`https://wa.me/${normalizePhone(property.owner_phone)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="block w-full text-center py-3 mt-2 bg-green-500/80 backdrop-blur text-white text-sm font-medium rounded-xl hover:bg-green-500 transition"
