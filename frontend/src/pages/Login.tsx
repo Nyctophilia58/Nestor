@@ -231,13 +231,14 @@ const Login = () => {
                     Email Address
                   </label>
                   <input
-                    type="email"
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                    className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
-                  />
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      required
+                      disabled={forgotLoading}
+                      className="w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
                 </div>
 
                 <button
@@ -272,19 +273,20 @@ const Login = () => {
                   Email
                 </label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
-                    (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || (submitted && !email)
-                      ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
-                      : error
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                    disabled={loading}
+                    className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
+                      (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || (submitted && !email)
                         ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
-                        : 'focus:ring-emerald-400/50'
-                  }`}
-                />
+                        : error
+                          ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
+                          : 'focus:ring-emerald-400/50'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  />
               </div>
 
               <div>
@@ -298,11 +300,12 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
+                    disabled={loading}
                     className={`w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
                       (submitted && !password) || error
                         ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
                         : 'focus:ring-emerald-400/50'
-                    }`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                   />
                   <button
                     type="button"

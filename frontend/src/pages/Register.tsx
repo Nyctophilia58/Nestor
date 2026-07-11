@@ -306,11 +306,12 @@ const Register = () => {
                 onChange={handleChange}
                 placeholder="01700000000"
                 required
+                disabled={loading}
                 className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
                   form.phone && !isValidPhone(form.phone)
                     ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
                     : 'focus:ring-emerald-400/50'
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               />
               {form.phone && !isValidPhone(form.phone) && (
                 <p className="text-red-400 text-xs mt-1">Enter a valid number (e.g. 01712345678 or +8801712345678)</p>
@@ -385,11 +386,12 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="John Doe"
                   required
+                  disabled={loading}
                   className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
                     submitted && !form.name
                       ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
                       : 'focus:ring-emerald-400/50'
-                  }`}
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
                 />
               </div>
 
@@ -404,11 +406,12 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="you@example.com"
                   required
+                  disabled={loading}
                   className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
                   form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
                     ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
                     : 'focus:ring-emerald-400/50'
-                  }`}
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
                 />
                 {form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && (
                   <p className="text-red-400 text-xs mt-1">Enter a valid email address</p>
@@ -426,11 +429,12 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="01700000000"
                   required
+                  disabled={loading}
                   className={`w-full px-4 py-2.5 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
                     form.phone && !isValidPhone(form.phone)
                       ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
                       : 'focus:ring-emerald-400/50'
-                  }`}
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
                 />
 
                 {form.phone && !isValidPhone(form.phone) && (
@@ -498,13 +502,14 @@ const Register = () => {
                     onChange={handleChange}
                     placeholder="••••••••"
                     required
+                    disabled={loading}
                     className={`w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
                       submitted && !form.password
                         ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
                         : form.password && getPasswordStrength(form.password).score < 5
                           ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
                           : 'focus:ring-emerald-400/50'
-                    }`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                   />
                   <button
                     type="button"
@@ -583,11 +588,12 @@ const Register = () => {
                     onChange={handleChange}
                     placeholder="••••••••"
                     required
+                    disabled={loading}
                     className={`w-full px-4 py-2.5 pr-10 glass rounded-lg text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 ${
                       submitted && !form.confirmPassword || (form.confirmPassword && form.confirmPassword !== form.password)
                         ? 'focus:ring-red-400/50 ring-1 ring-red-400/30'
                         : 'focus:ring-emerald-400/50'
-                    }`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                   />
                   <button
                     type="button"
