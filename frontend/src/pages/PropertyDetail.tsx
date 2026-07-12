@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api, { getErrorMessage } from "../lib/api";
-import { type Property } from "../types";
+import { type Property, type ViewingRequest } from "../types";
 import { useAuthStore } from "../store/authStore";
 import FavouriteButton from "../components/FavouriteButton";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -17,6 +17,16 @@ const PropertyDetail = () => {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [fetchError, setFetchError] = useState("");
+
+  // Viewing request state
+  const [showViewingModal, setShowViewingModal] = useState(false);
+  const [existingRequest, setExistingRequest] = useState<ViewingRequest | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [viewingForm, setViewingForm] = useState({
+    preferred_date: "",
+    preferred_time: "",
+    message: "",
+  });
 
   // Normalize Bangladeshi phone numbers to international format for WhatsApp
   const normalizePhone = (phone: string) => {
@@ -42,6 +52,51 @@ const PropertyDetail = () => {
     };
     fetchProperty();
   }, [id]);
+
+  // Check if user already has a viewing request for this property
+  useEffect(() => {
+    if (user && property && user.id !== property.user_id && user.role === "tenant") {
+      const checkExistingRequest = async () => {
+        try {
+          const res = await api.get(`/viewing-requests/check/${property.id}`);
+          if (res.data.has_request) {
+            setExistingRequest(res.data.request);
+          }
+        } catch (err) {
+          console.error("Error checking existing request:", err);
+        }
+      };
+      checkExistingRequest();
+    }
+  }, [user, property]);
+
+  const handleViewingRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!property) return;
+    if (!viewingForm.preferred_date || !viewingForm.preferred_time) {
+      toast.error("Please select a date and time");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await api.post("/viewing-requests", {
+        property_id: property.id,
+        preferred_date: viewingForm.preferred_date,
+        preferred_time: viewingForm.preferred_time,
+        message: viewingForm.message,
+      });
+      setExistingRequest(res.data);
+      setShowViewingModal(false);
+      setViewingForm({ preferred_date: "", preferred_time: "", message: "" });
+      toast.success("Viewing request sent! The landlord will review your request.");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -220,6 +275,56 @@ const PropertyDetail = () => {
                 WhatsApp
               </a>
             )}
+
+            {/* Request Viewing Button - Only for tenants, not the owner */}
+            {user && user.id !== property.user_id && user.role === "tenant" && (
+              <div className="mt-4">
+                {existingRequest ? (
+                  <div className="text-center">
+                    <p className="text-sm text-white/50 mb-2">Your viewing request</p>
+                    <span
+                      className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${
+                        existingRequest.status === "pending"
+                          ? "bg-yellow-500/20 text-yellow-300 border border-yellow-400/30"
+                          : existingRequest.status === "approved"
+                          ? "bg-green-500/20 text-green-300 border border-green-400/30"
+                          : existingRequest.status === "rejected"
+                          ? "bg-red-500/20 text-red-300 border border-red-400/30"
+                          : "bg-gray-500/20 text-gray-300 border border-gray-400/30"
+                      }`}
+                    >
+                      {existingRequest.status === "pending" && "⏳ Pending Review"}
+                      {existingRequest.status === "approved" && "✅ Request Approved"}
+                      {existingRequest.status === "rejected" && "❌ Request Rejected"}
+                      {existingRequest.status === "cancelled" && "❌ Request Cancelled"}
+                    </span>
+                    {existingRequest.status === "pending" && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await api.patch(`/viewing-requests/${existingRequest.id}`, { status: "cancelled" });
+                            setExistingRequest({ ...existingRequest, status: "cancelled" });
+                            toast.success("Request cancelled");
+                          } catch (err) {
+                            toast.error(getErrorMessage(err));
+                          }
+                        }}
+                        className="block w-full mt-2 text-center py-2 bg-red-500/15 text-red-400 text-sm font-medium rounded-xl hover:bg-red-500/25 transition"
+                      >
+                        Cancel Request
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowViewingModal(true)}
+                    className="block w-full py-3 mt-2 bg-emerald-500/80 backdrop-blur text-white text-sm font-medium rounded-xl hover:bg-emerald-500 transition"
+                  >
+                    📅 Request Viewing
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -234,6 +339,76 @@ const PropertyDetail = () => {
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
+
+      {/* Viewing Request Modal */}
+      {showViewingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="glass-light rounded-2xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white">Request a Viewing</h2>
+              <button
+                onClick={() => setShowViewingModal(false)}
+                className="text-white/50 hover:text-white text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleViewingRequest} className="space-y-4">
+              <div>
+                <label className="block text-sm text-white/70 mb-1">Preferred Date *</label>
+                <input
+                  type="date"
+                  required
+                  min={new Date().toISOString().split("T")[0]}
+                  value={viewingForm.preferred_date}
+                  onChange={(e) => setViewingForm({ ...viewingForm, preferred_date: e.target.value })}
+                  className="w-full px-4 py-2.5 glass rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-white/70 mb-1">Preferred Time *</label>
+                <input
+                  type="time"
+                  required
+                  value={viewingForm.preferred_time}
+                  onChange={(e) => setViewingForm({ ...viewingForm, preferred_time: e.target.value })}
+                  className="w-full px-4 py-2.5 glass rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-white/70 mb-1">Message (optional)</label>
+                <textarea
+                  rows={3}
+                  placeholder="Any additional information or questions..."
+                  value={viewingForm.message}
+                  onChange={(e) => setViewingForm({ ...viewingForm, message: e.target.value })}
+                  className="w-full px-4 py-2.5 glass rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowViewingModal(false)}
+                  className="flex-1 py-2.5 glass text-white/70 text-sm font-medium rounded-xl hover:glass-light hover:text-white transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex-1 py-2.5 bg-emerald-500/80 backdrop-blur text-white text-sm font-medium rounded-xl hover:bg-emerald-500 transition disabled:opacity-50"
+                >
+                  {submitting ? "Sending..." : "Send Request"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

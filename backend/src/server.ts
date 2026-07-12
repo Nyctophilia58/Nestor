@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes";
 import propertyRoutes from "./routes/propertyRoutes";
 import uploadRoutes from "./routes/uploadRoutes";
 import ticketRoutes from "./routes/ticketRoutes";
+import viewingRequestRoutes from "./routes/viewingRequestRoutes";
 import path from "path";
 import cookieParser from "cookie-parser";
 import adminRoutes from "./routes/adminRoutes";
@@ -43,7 +44,37 @@ async function ensureConstraints() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT
     `);
 
-    console.log("✅ Database constraints verified");
+    // Create viewing_requests table if not exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS viewing_requests (
+        id SERIAL PRIMARY KEY,
+        property_id INTEGER NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        landlord_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        preferred_date DATE NOT NULL,
+        preferred_time TIME NOT NULL,
+        message TEXT,
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create indexes for faster queries
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_viewing_requests_property_id ON viewing_requests(property_id)
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_viewing_requests_user_id ON viewing_requests(user_id)
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_viewing_requests_landlord_id ON viewing_requests(landlord_id)
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_viewing_requests_status ON viewing_requests(status)
+    `);
+
+    console.log("✅ Database constraints and tables verified");
   } catch (err) {
     console.error("Failed to add constraints:", err);
   }
@@ -83,6 +114,9 @@ app.get("/", (req, res) => {
 
 // Ticket route
 app.use("/api/tickets", ticketRoutes);
+
+// Viewing request routes
+app.use("/api/viewing-requests", viewingRequestRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

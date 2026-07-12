@@ -34,3 +34,27 @@ export interface FavouriteState {
   remove: (id: number) => void;
   set: (ids: number[]) => void;
 }
+
+export interface ViewingRequest {
+  id: number;
+  property_id: number;
+  user_id: number;
+  landlord_id: number;
+  preferred_date: string;
+  preferred_time: string;
+  message?: string;
+  status: "pending" | "approved" | "rejected" | "cancelled";
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  tenant_name?: string;
+  tenant_email?: string;
+  tenant_phone?: string;
+  landlord_name?: string;
+  landlord_email?: string;
+  landlord_phone?: string;
+  property_title?: string;
+  property_location?: string;
+  property_images?: string[];
+  property_price?: number;
+}
