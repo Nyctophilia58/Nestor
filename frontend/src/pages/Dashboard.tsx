@@ -32,8 +32,6 @@ const Dashboard = () => {
         }
       };
       fetchMyProperties();
-    } else {
-      setLoading(false);
     }
   }, [isLandlord]);
 

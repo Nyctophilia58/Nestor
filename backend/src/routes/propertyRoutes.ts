@@ -16,7 +16,7 @@ const router = express.Router();
 
 // Static routes (must come before /:id parametric route)
 router.get("/", getProperties);
-router.get("/mine", protect, getMyProperties);
+router.get("/mine", protect, isLandlord, getMyProperties);
 router.get("/favourites", protect, getFavourites);
 
 // Parametric route (/:id) – must come AFTER static routes
