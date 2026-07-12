@@ -13,14 +13,13 @@ const transporter = isConfigured
   ? nodemailer.createTransport({
       host: SMTP_HOST,
       port: SMTP_PORT,
-      secure: true,
+      secure: SMTP_PORT === 465,
       auth: {
         user: SMTP_USER,
         pass: SMTP_PASS,
       },
       // Force IPv4 to avoid ENETUNREACH on IPv6‑only networks
       family: 4,
-      service: "gmail",
       // Add timeout and keep-alive for better reliability
       // pool: true,
       // maxConnections: 1,
