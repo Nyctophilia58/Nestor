@@ -143,11 +143,116 @@ router.post("/complete-google", async (req, res) => {
   }
 });
 
-// Get current user
+// ─── Email Verification (OTP) ───
+
+// Ensure email_verified and OTP columns exist
+const ensureVerificationColumns = async () => {
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_otp VARCHAR(6)`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_otp_expiry TIMESTAMP`);
+};
+
+// Send verification OTP
+router.post('/send-verification-otp', protect, async (req: AuthRequest, res: ExpressResponse) => {
+  try {
+    await ensureVerificationColumns();
+    
+    const result = await pool.query('SELECT email, email_verified FROM users WHERE id = $1', [req.userId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const user = result.rows[0];
+    
+    if (user.email_verified) {
+      return res.status(400).json({ message: 'Email is already verified' });
+    }
+    
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    
+    await pool.query(
+      'UPDATE users SET verification_otp = $1, verification_otp_expiry = $2 WHERE id = $3',
+      [otp, expiry, req.userId]
+    );
+    
+    // Send email with OTP
+    try {
+      const { sendVerificationEmail } = await import("../utils/mail");
+      await sendVerificationEmail(user.email, otp);
+    } catch (emailError) {
+      // If email fails, log the OTP for development
+      console.log(`[DEV] Verification OTP for ${user.email}: ${otp}`);
+    }
+    
+    res.json({ message: 'Verification code sent to your email', email: user.email });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Verify email with OTP
+router.post('/verify-email-otp', protect, async (req: AuthRequest, res: ExpressResponse) => {
+  const { otp } = req.body;
+  
+  if (!otp || otp.length !== 6) {
+    return res.status(400).json({ message: 'Please enter a valid 6-digit code' });
+  }
+  
+  try {
+    await ensureVerificationColumns();
+    
+    const result = await pool.query(
+      'SELECT verification_otp, verification_otp_expiry, email FROM users WHERE id = $1',
+      [req.userId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const user = result.rows[0];
+    
+    if (!user.verification_otp) {
+      return res.status(400).json({ message: 'No verification code sent. Please request a new one.' });
+    }
+    
+    if (new Date() > new Date(user.verification_otp_expiry)) {
+      return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
+    }
+    
+    if (user.verification_otp !== otp) {
+      return res.status(400).json({ message: 'Invalid verification code' });
+    }
+    
+    // Update user as verified and clear OTP
+    await pool.query(
+      'UPDATE users SET email_verified = TRUE, verification_otp = NULL, verification_otp_expiry = NULL WHERE id = $1',
+      [req.userId]
+    );
+    
+    // Return updated user data
+    const updatedUser = await pool.query(
+      'SELECT id, name, email, phone, role, avatar, bio, created_at, email_verified FROM users WHERE id = $1',
+      [req.userId]
+    );
+    
+    res.json({ 
+      message: 'Email verified successfully!',
+      user: updatedUser.rows[0]
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get current user (updated to include email_verified)
 router.get('/me', protect, async (req: AuthRequest, res: ExpressResponse) => {
   try {
+    await ensureVerificationColumns();
     const result = await pool.query(
-      'SELECT id, name, email, phone, avatar, bio, role FROM users WHERE id = $1',
+      'SELECT id, name, email, phone, avatar, bio, role, created_at, email_verified FROM users WHERE id = $1',
       [req.userId]
     )
     res.json(result.rows[0])
@@ -156,7 +261,7 @@ router.get('/me', protect, async (req: AuthRequest, res: ExpressResponse) => {
   }
 });
 
-// Update user profile
+// Update user profile (updated to include email_verified in response)
 router.put('/profile', protect, async (req: AuthRequest, res: ExpressResponse) => {
   const { name, phone, bio, avatar } = req.body
   const updates: string[] = []
@@ -171,8 +276,9 @@ router.put('/profile', protect, async (req: AuthRequest, res: ExpressResponse) =
   }
   values.push(req.userId)
   try {
+    await ensureVerificationColumns();
     const result = await pool.query(
-      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, name, email, phone, avatar, bio, role`,
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, name, email, phone, avatar, bio, role, created_at, email_verified`,
       values
     )
     res.json(result.rows[0])

@@ -132,6 +132,8 @@ export const login = async (req: Request, res: Response) => {
         role: user.role,
         avatar: user.avatar,
         bio: user.bio,
+        created_at: user.created_at,
+        email_verified: user.email_verified || false,
       },
       token,
     });

@@ -6,6 +6,8 @@ export interface User {
 	role: "tenant" | "landlord" | "admin";
 	avatar?: string;
 	bio?: string;
+  created_at?: string;
+  email_verified?: boolean;
 }
 
 export interface Property {

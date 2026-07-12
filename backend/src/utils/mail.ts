@@ -83,3 +83,19 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
   `;
   return await sendMail(email, subject, html);
 }
+
+export async function sendVerificationEmail(email: string, otp: string) {
+  const subject = "Verify your Nestor email";
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h1 style="color: #333;">Email Verification</h1>
+      <p style="color: #666; line-height: 1.6;">Your verification code is:</p>
+      <div style="margin: 30px 0; text-align: center;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #10b981;">${otp}</span>
+      </div>
+      <p style="color: #666; line-height: 1.6;">Enter this code in Nestor to verify your email address.</p>
+      <p style="color: #999; font-size: 14px; margin-top: 30px;">This code expires in 10 minutes. If you didn't request this, you can safely ignore this email.</p>
+    </div>
+  `;
+  return await sendMail(email, subject, html);
+}
