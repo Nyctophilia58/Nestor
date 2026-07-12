@@ -18,6 +18,8 @@ const transporter = isConfigured
         user: SMTP_USER,
         pass: SMTP_PASS,
       },
+      // Force IPv4 to avoid ENETUNREACH on IPv6‑only networks
+      family: 4,
       // Add timeout and keep-alive for better reliability
       // pool: true,
       // maxConnections: 1,
@@ -27,7 +29,7 @@ const transporter = isConfigured
       connectionTimeout: 30000, // 30 second timeout
       greetingTimeout: 30000,
       socketTimeout: 30000,
-    })
+    } as any)
   : null;
 
 // Log configuration status on load
