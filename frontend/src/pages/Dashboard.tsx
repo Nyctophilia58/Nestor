@@ -15,20 +15,27 @@ const Dashboard = () => {
   const [error, setError] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
+  const isLandlord = user?.role === "landlord" || user?.role === "admin";
+  const isTenant = user?.role === "tenant";
+
   useEffect(() => {
-    const fetchMyProperties = async () => {
-      try {
-        const res = await api.get("/properties/mine");
-        setProperties(res.data);
-      } catch (err: unknown) {
-        setError(getErrorMessage(err));
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMyProperties();
-  }, []);
+    if (isLandlord) {
+      const fetchMyProperties = async () => {
+        try {
+          const res = await api.get("/properties/mine");
+          setProperties(res.data);
+        } catch (err: unknown) {
+          setError(getErrorMessage(err));
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchMyProperties();
+    } else {
+      setLoading(false);
+    }
+  }, [isLandlord]);
 
   // Redirect if not logged in
   if (!user) return <Navigate to="/login" replace />;
@@ -56,16 +63,29 @@ const Dashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">My Dashboard</h1>
+          <h1 className="text-2xl font-bold text-white">
+            My Dashboard
+          </h1>
           <p className="text-white/50 text-sm mt-1">{user.email}</p>
         </div>
         <div className="flex gap-3">
-          <Link
-            to="/add-property"
-            className="px-4 py-2 bg-blue-500/80 backdrop-blur text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition"
-          >
-            + Add Property
-          </Link>
+          {isLandlord && (
+            <Link
+              to="/add-property"
+              className="px-4 py-2 bg-blue-500/80 backdrop-blur text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition"
+            >
+              + Add Property
+            </Link>
+          )}
+
+          {isTenant && (
+            <Link
+              to="/listings"
+              className="px-4 py-2 bg-blue-500/80 backdrop-blur text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition"
+            >
+              🔍 Find Property
+            </Link>
+          )}
           <button
             onClick={handleLogout}
             className="px-4 py-2 glass text-white/70 text-sm font-medium rounded-lg hover:glass-light hover:text-white transition"
@@ -75,124 +95,159 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-10">
-        {[
-          { label: "Total Listings", value: properties.length },
-          {
-            label: "For Rent",
-            value: properties.filter((p) => p.type === "rent").length,
-          },
-          {
-            label: "For Sale",
-            value: properties.filter((p) => p.type === "sale").length,
-          },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="glass-card rounded-2xl p-6 text-center"
-          >
-            <p className="text-3xl font-bold text-blue-400">{stat.value}</p>
-            <p className="text-sm text-white/50 mt-1">{stat.label}</p>
+      {/* Tenant Dashboard */}
+      {isTenant ? (
+        <div className="space-y-8">
+          {/* Quick Actions */}
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: "🔍", label: "Browse Listings", path: "/listings", desc: "Find your ideal home" },
+                { icon: "❤️", label: "Saved Properties", path: "/favourites", desc: "Your saved listings" },
+                { icon: "📋", label: "Viewing Requests", path: "/favourites", desc: "Schedule property viewings" },
+                { icon: "💬", label: "Messages", path: "/favourites", desc: "Chat with landlords" },
+              ].map((action) => (
+                <Link
+                  key={action.path}
+                  to={action.path}
+                  className="glass-card rounded-xl p-4 hover:glass-light transition group"
+                >
+                  <span className="text-2xl mb-2 block">{action.icon}</span>
+                  <p className="text-white font-medium text-sm group-hover:text-emerald-400 transition">
+                    {action.label}
+                  </p>
+                  <p className="text-white/40 text-xs mt-1">{action.desc}</p>
+                </Link>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
-
-      {/* Error */}
-      {error ? (
-        <ErrorState message={error} onRetry={() => window.location.reload()} />
-      ) : loading ? (
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-24 glass rounded-2xl animate-pulse" />
-          ))}
-        </div>
-      ) : properties.length === 0 ? (
-        <div className="text-center py-20 glass rounded-2xl text-white/30 border border-dashed border-white/10">
-          <p className="text-5xl mb-4">🏠</p>
-          <p className="font-medium text-white/50">No listings yet</p>
-          <Link
-            to="/add-property"
-            className="inline-block mt-4 px-5 py-2 bg-blue-500/80 backdrop-blur text-white text-sm rounded-lg hover:bg-blue-500 transition"
-          >
-            Post your first property
-          </Link>
         </div>
       ) : (
-        <div className="space-y-4">
-          {properties.map((property) => (
-            <div
-              key={property.id}
-              className="glass-card rounded-2xl p-4 flex items-center gap-4 flex-wrap md:flex-nowrap"
-            >
-              {/* Image */}
-              <div className="w-20 h-20 rounded-xl overflow-hidden bg-black/20 flex-shrink-0">
-                {property.images?.[0] ? (
-                  <img
-                    src={property.images[0]}
-                    alt={property.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl text-white/20">
-                    🏠
-                  </div>
-                )}
+        /* Landlord/Admin Dashboard */
+        <>
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4 mb-10">
+            {[
+              { label: "Total Listings", value: properties.length },
+              {
+                label: "For Rent",
+                value: properties.filter((p) => p.type === "rent").length,
+              },
+              {
+                label: "For Sale",
+                value: properties.filter((p) => p.type === "sale").length,
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="glass-card rounded-2xl p-6 text-center"
+              >
+                <p className="text-3xl font-bold text-blue-400">{stat.value}</p>
+                <p className="text-sm text-white/50 mt-1">{stat.label}</p>
               </div>
+            ))}
+          </div>
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-white truncate">
-                  {property.title}
-                </h3>
-                <p className="text-sm text-white/50 truncate">
-                  📍 {property.location}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full font-medium backdrop-blur ${
-                      property.type === "rent"
-                        ? "bg-green-500/20 text-green-300 border border-green-400/30"
-                        : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
-                    }`}
-                  >
-                    {property.type === "rent" ? "For Rent" : "For Sale"}
-                  </span>
-                  <span className="text-xs text-white/40 capitalize">
-                    {property.category}
-                  </span>
-                </div>
-              </div>
-
-              {/* Price */}
-              <div className="text-right flex-shrink-0">
-                <p className="font-bold text-blue-400">
-                  ৳{property.price.toLocaleString()}
-                </p>
-                <p className="text-xs text-white/30">
-                  {property.type === "rent" ? "/month" : ""}
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div className="flex flex-col gap-2 flex-shrink-0">
-                <Link
-                  to={`/listings/${property.id}`}
-                  className="px-3 py-1.5 text-xs glass text-white/70 rounded-lg hover:glass-light hover:text-white transition text-center"
-                >
-                  View
-                </Link>
-                <button
-                  onClick={() => setDeleteId(property.id)}
-                  className="px-3 py-1.5 text-xs bg-red-500/15 text-red-400 rounded-lg hover:bg-red-500/25 transition"
-                >
-                  Delete
-                </button>
-              </div>
+          {/* Error */}
+          {error ? (
+            <ErrorState message={error} onRetry={() => window.location.reload()} />
+          ) : loading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-24 glass rounded-2xl animate-pulse" />
+              ))}
             </div>
-          ))}
-        </div>
+          ) : properties.length === 0 ? (
+            <div className="text-center py-20 glass rounded-2xl text-white/30 border border-dashed border-white/10">
+              <p className="text-5xl mb-4">🏠</p>
+              <p className="font-medium text-white/50">No listings yet</p>
+              <Link
+                to="/add-property"
+                className="inline-block mt-4 px-5 py-2 bg-blue-500/80 backdrop-blur text-white text-sm rounded-lg hover:bg-blue-500 transition"
+              >
+                Post your first property
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {properties.map((property) => (
+                <div
+                  key={property.id}
+                  className="glass-card rounded-2xl p-4 flex items-center gap-4 flex-wrap md:flex-nowrap"
+                >
+                  {/* Image */}
+                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-black/20 flex-shrink-0">
+                    {property.images?.[0] ? (
+                      <img
+                        src={property.images[0]}
+                        alt={property.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-2xl text-white/20">
+                        🏠
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-white truncate">
+                      {property.title}
+                    </h3>
+                    <p className="text-sm text-white/50 truncate">
+                      📍 {property.location}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium backdrop-blur ${
+                          property.type === "rent"
+                            ? "bg-green-500/20 text-green-300 border border-green-400/30"
+                            : "bg-blue-500/20 text-blue-300 border border-blue-400/30"
+                        }`}
+                      >
+                        {property.type === "rent" ? "For Rent" : "For Sale"}
+                      </span>
+                      <span className="text-xs text-white/40 capitalize">
+                        {property.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-bold text-blue-400">
+                      ৳{property.price.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-white/30">
+                      {property.type === "rent" ? "/month" : ""}
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-col gap-2 flex-shrink-0">
+                    <Link
+                      to={`/listings/${property.id}`}
+                      className="px-3 py-1.5 text-xs glass text-white/70 rounded-lg hover:glass-light hover:text-white transition text-center"
+                    >
+                      View
+                    </Link>
+                    <button
+                      onClick={() => setDeleteId(property.id)}
+                      className="px-3 py-1.5 text-xs bg-red-500/15 text-red-400 rounded-lg hover:bg-red-500/25 transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* End of Landlord Dashboard */}
+        </>
       )}
+      {/* End of isTenant check */}
 
       {/* Delete Confirmation */}
       <ConfirmDialog
