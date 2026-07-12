@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function Footer() {
   return (
@@ -107,14 +108,22 @@ export default function Footer() {
                     title: "Nestor",
                     text: "Find your perfect home in Bangladesh — no brokers!",
                     url: window.location.origin,
-                  });
+                  }).catch(() => {});
                 } else {
                   navigator.clipboard.writeText(window.location.origin);
+                  toast.success("Link copied to clipboard!");
                 }
               }}
               className="w-full py-3 glass-light rounded-xl text-white text-sm font-medium hover:glass transition flex items-center justify-center gap-2"
             >
-              <span>↑</span> share
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              Share
             </button>
           </div>
         </div>
