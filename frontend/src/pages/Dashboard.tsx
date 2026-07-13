@@ -504,7 +504,7 @@ const Dashboard = () => {
                             📍 {request.property_location}
                           </p>
                           <p className="text-sm text-white/60 mt-2">
-                            👤 Tenant: {request.tenant_name} ({request.tenant_email})
+                            👤 Tenant: {request.tenant_name}
                           </p>
                           {request.tenant_phone && (
                             <p className="text-sm text-white/50">
