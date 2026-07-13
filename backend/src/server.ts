@@ -8,6 +8,7 @@ import propertyRoutes from "./routes/propertyRoutes";
 import uploadRoutes from "./routes/uploadRoutes";
 import ticketRoutes from "./routes/ticketRoutes";
 import viewingRequestRoutes from "./routes/viewingRequestRoutes";
+import messageRoutes from "./routes/messageRoutes";
 import path from "path";
 import cookieParser from "cookie-parser";
 import adminRoutes from "./routes/adminRoutes";
@@ -74,6 +75,54 @@ async function ensureConstraints() {
       CREATE INDEX IF NOT EXISTS idx_viewing_requests_status ON viewing_requests(status)
     `);
 
+    // Create conversations table if not exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS conversations (
+        id SERIAL PRIMARY KEY,
+        user1_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        user2_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user1_id, user2_id)
+      )
+    `);
+
+    // Create messages table if not exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+        sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        recipient_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        property_id INTEGER REFERENCES properties(id) ON DELETE SET NULL,
+        content TEXT NOT NULL,
+        read_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create indexes for conversations
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_conversations_user1 ON conversations(user1_id)
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_conversations_user2 ON conversations(user2_id)
+    `);
+
+    // Create indexes for messages
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id)
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id)
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_messages_recipient ON messages(recipient_id)
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_messages_read ON messages(recipient_id, read_at)
+    `);
+
     console.log("✅ Database constraints and tables verified");
   } catch (err) {
     console.error("Failed to add constraints:", err);
@@ -117,6 +166,9 @@ app.use("/api/tickets", ticketRoutes);
 
 // Viewing request routes
 app.use("/api/viewing-requests", viewingRequestRoutes);
+
+// Message routes
+app.use("/api/messages", messageRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

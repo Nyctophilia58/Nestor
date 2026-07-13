@@ -25,6 +25,7 @@ import AdminPanel from "./pages/AdminPanel";
 import AdminTickets from "./pages/AdminTickets";
 import Profile from "./pages/Profile";
 import HelpCenter from "./pages/HelpCenter";
+import Messages from "./pages/Messages";
 
 function App() {
   const { user } = useAuthStore();
@@ -118,6 +119,8 @@ function MainLayout() {
         <Route path="/about" element={<About />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/messages" element={<Messages />} />
+        <Route path="/messages/:conversationId" element={<Messages />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />

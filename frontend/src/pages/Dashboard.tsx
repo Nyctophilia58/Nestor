@@ -98,6 +98,62 @@ const Dashboard = () => {
     }
   };
 
+  const handleStartConversation = async (userId: number) => {
+    // Validate userId parameter
+    if (userId === undefined || userId === null || typeof userId !== 'number' || !Number.isFinite(userId) || userId <= 0) {
+      toast.error('Invalid user ID');
+      return;
+    }
+
+    try {
+      // Get or create a conversation with this user
+      const res = await api.get(`/messages/user/${userId}`);
+
+      // Validate response
+      if (!res.data) {
+        throw new Error('No data received from server');
+      }
+
+      if (typeof res.data !== 'object' || res.data === null) {
+        throw new Error('Invalid response format from server');
+      }
+
+      if (!('conversation_id' in res.data) || res.data.conversation_id === undefined || res.data.conversation_id === null) {
+        throw new Error('Conversation ID not found in server response');
+      }
+
+      const conversationId = res.data.conversation_id;
+
+      // Validate conversationId
+      if (typeof conversationId !== 'number' || !Number.isFinite(conversationId) || conversationId <= 0) {
+        throw new Error(`Invalid conversation ID received: ${conversationId}`);
+      }
+
+      // Navigate to the conversation
+      navigate(`/messages/${conversationId}`);
+    } catch (err) {
+      // Handle 401 Unauthorized - likely expired token
+      if (err.response?.status === 401) {
+        // Clear auth state and redirect to login
+        logout();
+        navigate("/login");
+        return;
+      }
+
+      // Log detailed error for debugging
+      console.error('[handleStartConversation] Failed to start conversation:', {
+        error: err instanceof Error ? err : String(err),
+        message: err instanceof Error ? err.message : 'Unknown error',
+        userId,
+        status: err.response?.status,
+        timestamp: new Date().toISOString()
+      });
+
+      // Show user-friendly error message
+      toast.error(getErrorMessage(err));
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -150,7 +206,7 @@ const Dashboard = () => {
               {[
                 { icon: "🔍", label: "Browse Listings", path: "/listings", desc: "Find your ideal home" },
                 { icon: "❤️", label: "Saved Properties", path: "/favourites", desc: "Your saved listings" },
-                { icon: "💬", label: "Messages", path: "/favourites", desc: "Chat with landlords" },
+                { icon: "💬", label: "Messages", path: "/messages", desc: "Chat with landlords" },
               ].map((action) => (
                 <Link
                   key={action.path}
@@ -255,6 +311,16 @@ const Dashboard = () => {
                             📞 Contact
                           </a>
                         )}
+                        {request.status === "approved" && request.landlord_id && (
+                            <button
+                              onClick={() => {
+                                handleStartConversation(request.landlord_id);
+                              }}
+                              className="px-3 py-1.5 text-xs bg-blue-500/20 text-blue-300 rounded-lg hover:bg-blue-500/30 transition"
+                            >
+                              💬 Message
+                            </button>
+                          )}
                         {request.status === "pending" && (
                           <button
                             onClick={() => handleCancelRequest(request.id)}
@@ -474,6 +540,26 @@ const Dashboard = () => {
                             {request.status === "rejected" && "❌ Rejected"}
                             {request.status === "cancelled" && "❌ Cancelled"}
                           </span>
+                          {request.status === "approved" && request.tenant_phone && (
+                            <a
+                              href={`https://wa.me/${request.tenant_phone.replace(/[^\d]/g, "").replace(/^88/, "")}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-3 py-1.5 text-xs bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 transition"
+                            >
+                              📞 Contact Tenant
+                            </a>
+                          )}
+                          {request.status === "approved" && request.user_id && (
+                            <button
+                              onClick={() => {
+                                handleStartConversation(request.user_id);
+                              }}
+                              className="px-3 py-1.5 text-xs bg-blue-500/20 text-blue-300 rounded-lg hover:bg-blue-500/30 transition"
+                            >
+                              💬 Message
+                            </button>
+                          )}
                           {request.status === "pending" && (
                             <div className="flex gap-2">
                               <button
@@ -489,16 +575,6 @@ const Dashboard = () => {
                                 ✗ Reject
                               </button>
                             </div>
-                          )}
-                          {request.status === "approved" && request.tenant_phone && (
-                            <a
-                              href={`https://wa.me/${request.tenant_phone.replace(/[^\d]/g, "").replace(/^88/, "")}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="px-3 py-1.5 text-xs bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 transition"
-                            >
-                              📞 Contact Tenant
-                            </a>
                           )}
                         </div>
                       </div>

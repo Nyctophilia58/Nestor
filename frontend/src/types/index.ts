@@ -58,3 +58,31 @@ export interface ViewingRequest {
   property_images?: string[];
   property_price?: number;
 }
+
+export interface Message {
+  id: number;
+  conversation_id: number;
+  sender_id: number;
+  recipient_id: number;
+  property_id?: number;
+  content: string;
+  read_at?: string;
+  created_at: string;
+  sender_name?: string;
+  sender_avatar?: string;
+  recipient_name?: string;
+  property_title?: string;
+  property_images?: string[];
+}
+
+export interface Conversation {
+  conversation_id: number;
+  updated_at: string;
+  other_user_id: number;
+  other_user_name: string;
+  other_user_role: "tenant" | "landlord" | "admin";
+  other_user_avatar?: string;
+  last_message?: string;
+  last_message_at?: string;
+  unread_count: number;
+}
