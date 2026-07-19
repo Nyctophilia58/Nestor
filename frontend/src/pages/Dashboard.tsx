@@ -6,6 +6,7 @@ import { type Property, type ViewingRequest } from "../types";
 import { useAuthStore } from "../store/authStore";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ErrorState from "../components/ErrorState";
+import axios from "axios";
 
 const Dashboard = () => {
   const { user, logout } = useAuthStore();
@@ -131,25 +132,24 @@ const Dashboard = () => {
 
       // Navigate to the conversation
       navigate(`/messages/${conversationId}`);
-    } catch (err) {
-      // Handle 401 Unauthorized - likely expired token
-      if (err.response?.status === 401) {
-        // Clear auth state and redirect to login
-        logout();
-        navigate("/login");
-        return;
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          logout();
+          navigate("/login");
+          return;
+        }
+
+        console.error("[handleStartConversation]", {
+          message: err.message,
+          status: err.response?.status,
+          userId,
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        console.error(err);
       }
 
-      // Log detailed error for debugging
-      console.error('[handleStartConversation] Failed to start conversation:', {
-        error: err instanceof Error ? err : String(err),
-        message: err instanceof Error ? err.message : 'Unknown error',
-        userId,
-        status: err.response?.status,
-        timestamp: new Date().toISOString()
-      });
-
-      // Show user-friendly error message
       toast.error(getErrorMessage(err));
     }
   };
